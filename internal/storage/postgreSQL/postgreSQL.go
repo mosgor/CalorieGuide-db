@@ -3,15 +3,19 @@ package postgreSQL
 import (
 	"CalorieGuide-db/internal/lib/repeatable"
 	"context"
-	"database/sql"
 	"fmt"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v4"
 	_ "github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"time"
 )
 
-type Storage struct {
-	db *sql.DB
+type Client interface {
+	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
+	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
+	Begin(ctx context.Context) (pgx.Tx, error)
 }
 
 func New(ctx context.Context, maxAttempts int, timeout time.Duration) (pool *pgxpool.Pool, err error) {
