@@ -4,6 +4,7 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 	"log"
 	"os"
+	"runtime"
 	"time"
 )
 
@@ -22,7 +23,12 @@ type HTTPServer struct {
 }
 
 func MustLoad() *Config {
-	configPath := os.Getenv("CONFIG_PATH")
+	var configPath string
+	if runtime.GOOS == "windows" {
+		configPath = "./config/local.yaml"
+	} else {
+		configPath = "/home/mosgor/CalorieGuide-db/Source/config/local.yaml"
+	}
 	if configPath == "" {
 		log.Fatal("CONFIG_PATH is not set")
 	}

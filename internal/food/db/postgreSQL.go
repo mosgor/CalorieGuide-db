@@ -31,8 +31,31 @@ func (r *repository) Create(ctx context.Context, food *food.Food) error {
 	return nil
 }
 
-func (r *repository) FindAll(ctx context.Context) (food []food.Food, err error) {
-	return nil, nil
+func (r *repository) FindAll(ctx context.Context) (u []food.Food, err error) {
+	q := `
+		SELECT 
+		    id, food_name, description, calories, proteins, carbohydrates, fats, picture
+		FROM public.food;
+	`
+	rows, err := r.client.Query(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+	allFood := make([]food.Food, 0)
+	for rows.Next() {
+		var fd food.Food
+		err = rows.Scan(
+			&fd.Id, &fd.Name, &fd.Description, &fd.Calories, &fd.Proteins, &fd.Carbohydrates, &fd.Fats, &fd.Picture,
+		)
+		if err != nil {
+			return nil, err
+		}
+		allFood = append(allFood, fd)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return allFood, nil
 }
 
 func (r *repository) FindOne(ctx context.Context, id string) (food.Food, error) {

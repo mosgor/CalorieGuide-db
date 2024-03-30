@@ -2,10 +2,15 @@ package main
 
 import (
 	"CalorieGuide-db/internal/config"
+	food2 "CalorieGuide-db/internal/food/db"
+	food "CalorieGuide-db/internal/food/handlers"
 	"CalorieGuide-db/internal/lib/logger/slg"
 	"CalorieGuide-db/internal/storage/postgreSQL"
 	"context"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
+	"net/http"
 	"os"
 )
 
@@ -27,7 +32,30 @@ func main() {
 		log.Error("failed to init storage", slg.Err(err))
 		os.Exit(1)
 	}
-	_ = storage
+
+	foodRepo := food2.NewRepository(storage, log)
+
+	router := chi.NewRouter()
+	router.Use(middleware.RequestID)
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.URLFormat)
+
+	router.Get("/products", food.NewFindAll(log, foodRepo))
+	router.Post("/product", food.NewAdd(log, foodRepo))
+
+	log.Info("starting server", slog.String("addr", cfg.Address))
+	srv := &http.Server{
+		Addr:         cfg.Address,
+		Handler:      router,
+		ReadTimeout:  cfg.HTTPServer.Timeout,
+		WriteTimeout: cfg.HTTPServer.Timeout,
+		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
+	}
+	if err := srv.ListenAndServe(); err != nil {
+		log.Error("failed to start server: " + err.Error())
+	}
+	log.Error("server stopped")
 }
 
 func setupLogger(env string) *slog.Logger {

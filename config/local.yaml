@@ -1,6 +1,6 @@
 env: "local"
 http_server:
-  address: "0.0.0.0:8082"
+  address: "0.0.0.0:8088"
   timeout: 4s
   idle_timeout: 30s
   user: "mosgor"
