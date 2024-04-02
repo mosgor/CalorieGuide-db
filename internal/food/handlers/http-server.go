@@ -2,13 +2,16 @@ package food
 
 import (
 	"CalorieGuide-db/internal/food"
-	"CalorieGuide-db/internal/lib/api/response"
 	"CalorieGuide-db/internal/lib/logger/slg"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"log/slog"
 	"net/http"
 )
+
+type FindAllRequest struct {
+	Sort string `json:"sort"`
+}
 
 type FindAllResponse struct {
 	//response.Response
@@ -27,10 +30,19 @@ func NewFindAll(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 			slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
-		foods, err := repository.FindAll(r.Context())
+		var req FindAllRequest
+		var sortType string = "fromNewest"
+		if r.Body != http.NoBody {
+			err := render.DecodeJSON(r.Body, &req)
+			if err != nil {
+				log.Error("Failed to parse json")
+				return
+			}
+			sortType = req.Sort
+		}
+		foods, err := repository.FindAll(r.Context(), sortType)
 		if err != nil {
 			log.Error("Failed to get all foods")
-			render.JSON(w, r, response.Error(err.Error()))
 			return
 		}
 		render.JSON(w, r, FindAllResponse{
@@ -48,6 +60,10 @@ func NewAdd(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 		var req food.Food
+
+		req.AuthorId = 1 //TODO: delete this line
+		req.Likes = 5
+
 		err := render.DecodeJSON(r.Body, &req)
 		if err != nil {
 			log.Error("Failed to parse request body", slg.Err(err))
@@ -58,9 +74,8 @@ func NewAdd(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 			log.Error("Failed to create food", slg.Err(err))
 			return
 		}
-		render.JSON(w, r, AddResponse{
-			//Response: response.Ok(),
-			Product: req,
-		})
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		render.JSON(w, r, req)
 	}
 }
