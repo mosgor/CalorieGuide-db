@@ -17,11 +17,15 @@ type repository struct {
 
 func (r *repository) Create(ctx context.Context, food *food.Food) error {
 	q := `
-		INSERT INTO food (food_name, description, calories, proteins, carbohydrates, fats, likes, author_id)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		INSERT INTO food (food_name, description, calories, proteins, carbohydrates, fats, likes, author_id, picture)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		RETURNING id`
 	if err := r.client.QueryRow(
-		ctx, q, food.Name, food.Description, food.Calories, food.Proteins, food.Carbohydrates, food.Fats, food.Likes, food.AuthorId,
+		ctx, q, food.Name,
+		food.Description, food.Calories,
+		food.Proteins, food.Carbohydrates,
+		food.Fats, food.Likes,
+		food.AuthorId, food.Picture,
 	).Scan(&food.Id); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
