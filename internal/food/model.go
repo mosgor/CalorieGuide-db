@@ -8,7 +8,7 @@ type Food struct {
 	Proteins      int    `json:"proteins"`
 	Carbohydrates int    `json:"carbohydrates"`
 	Fats          int    `json:"fats"`
-	AuthorId      int    `json:"author_id,omitempty"`
+	AuthorId      int    `json:"author_id"`
 	Likes         int    `json:"likes,omitempty"`
 	Picture       []byte `json:"picture,omitempty"`
 }

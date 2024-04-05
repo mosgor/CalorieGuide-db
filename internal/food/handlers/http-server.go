@@ -60,10 +60,6 @@ func NewAdd(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 		var req food.Food
-
-		req.AuthorId = 1 //TODO: delete this line
-		req.Likes = 5
-
 		err := render.DecodeJSON(r.Body, &req)
 		if err != nil {
 			log.Error("Failed to parse request body", slg.Err(err))
@@ -72,6 +68,7 @@ func NewAdd(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 		err = repository.Create(r.Context(), &req)
 		if err != nil {
 			log.Error("Failed to create food", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")

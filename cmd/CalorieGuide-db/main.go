@@ -1,6 +1,8 @@
 package main
 
 import (
+	client2 "CalorieGuide-db/internal/client/db"
+	client "CalorieGuide-db/internal/client/handlers"
 	"CalorieGuide-db/internal/config"
 	food2 "CalorieGuide-db/internal/food/db"
 	food "CalorieGuide-db/internal/food/handlers"
@@ -34,6 +36,7 @@ func main() {
 	}
 
 	foodRepo := food2.NewRepository(storage, log)
+	clientRepo := client2.NewRepository(storage, log)
 
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
@@ -43,6 +46,8 @@ func main() {
 
 	router.Get("/products", food.NewFindAll(log, foodRepo))
 	router.Post("/product", food.NewAdd(log, foodRepo))
+	router.Post("/user", client.NewAdd(log, clientRepo))
+	router.Get("/login", client.FindEmail(log, clientRepo))
 
 	log.Info("starting server", slog.String("addr", cfg.Address))
 	srv := &http.Server{

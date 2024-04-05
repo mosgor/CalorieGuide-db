@@ -1,6 +1,6 @@
 # ЗАПРОСЫ И ОТВЕТЫ
 
-*omitempty - поля может быть пропущено*
+*omitempty - поле может быть пропущено*
 
 # Продукты
 
@@ -16,6 +16,7 @@ Request example:
   "proteins": "number",
   "carbohydrates": "number",
   "fats": "number",
+  "author_id": "number",
   "picture": "byte[],omitempty"
 }
 ```
@@ -146,7 +147,7 @@ Response example:
 
 # Пользователь
 
-- Создание пользователя `POST /user` **Скоро будет добавлено**
+- Создание пользователя `POST /user`
 
 Request example:
 
@@ -154,6 +155,29 @@ Request example:
 {
   "name": "string",
   "surname": "string",
+  "email": "string",
+  "password": "string"
+}
+```
+
+Response example:
+
+```json
+{
+  "id": "number",
+  "name": "string",
+  "surname": "string",
+  "email": "string",
+  "password": "string"
+}
+```
+
+- Авторизация пользователя `GET /login`
+
+Request example:
+
+```json
+{
   "email": "string",
   "password": "string"
 }

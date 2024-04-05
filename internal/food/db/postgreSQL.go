@@ -30,7 +30,7 @@ func (r *repository) Create(ctx context.Context, food *food.Food) error {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			r.log.Error("Data base error", slg.PgErr(*pgErr))
-			return nil
+			return err
 		}
 		return err
 	}
@@ -79,17 +79,17 @@ func (r *repository) FindAll(ctx context.Context, sortType string) (u []food.Foo
 	return allFood, nil
 }
 
-func (r *repository) FindOne(ctx context.Context, id string) (food.Food, error) {
+func (r *repository) FindOne(ctx context.Context, id int) (food.Food, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (r *repository) Update(ctx context.Context, food food.Food) error {
+func (r *repository) Update(ctx context.Context, id int) (food.Food, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (r *repository) Delete(ctx context.Context, id string) error {
+func (r *repository) Delete(ctx context.Context, id int) (food.Food, error) {
 	//TODO implement me
 	panic("implement me")
 }
