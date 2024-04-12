@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/render"
 	"log/slog"
 	"net/http"
+	"strconv"
 )
 
 type FindAllRequest struct {
@@ -74,5 +75,66 @@ func NewAdd(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		render.JSON(w, r, req)
+	}
+}
+
+func NewFindOne(log *slog.Logger, repository food.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "food.handlers.NewFindOne"
+		log = log.With(
+			slog.String("op", op),
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+		prodId, err := strconv.Atoi(r.PathValue("id"))
+		if err != nil {
+			log.Error("Failed to get food Id", slg.Err(err))
+			return
+		}
+		product, err := repository.FindOne(r.Context(), prodId)
+		if err != nil {
+			log.Error("Failed to get food", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		render.JSON(w, r, product)
+	}
+}
+
+func NewUpdate(log *slog.Logger, repository food.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "food.handlers.NewUpdate"
+		log = log.With(
+			slog.String("op", op),
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+		var req food.Food
+		err := render.DecodeJSON(r.Body, &req)
+		if err != nil {
+			log.Error("Failed to parse request body", slg.Err(err))
+			return
+		}
+		prodId, err := strconv.Atoi(r.PathValue("id"))
+		if err != nil {
+			log.Error("Failed to get food Id", slg.Err(err))
+			return
+		}
+		req.Id = prodId
+		err = repository.Update(r.Context(), req)
+		if err != nil {
+			log.Error("Failed to update food", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		product, err := repository.FindOne(r.Context(), prodId)
+		if err != nil {
+			log.Error("Failed to update food", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		render.JSON(w, r, product)
 	}
 }

@@ -47,7 +47,9 @@ func main() {
 	router.Get("/products", food.NewFindAll(log, foodRepo))
 	router.Post("/product", food.NewAdd(log, foodRepo))
 	router.Post("/user", client.NewAdd(log, clientRepo))
-	router.Get("/login", client.FindEmail(log, clientRepo))
+	router.Post("/login", client.FindEmail(log, clientRepo))
+	router.Get("/products/{id}", food.NewFindOne(log, foodRepo))
+	router.Put("/products/{id}", food.NewUpdate(log, foodRepo))
 
 	log.Info("starting server", slog.String("addr", cfg.Address))
 	srv := &http.Server{

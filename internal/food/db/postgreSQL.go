@@ -79,14 +79,46 @@ func (r *repository) FindAll(ctx context.Context, sortType string) (u []food.Foo
 	return allFood, nil
 }
 
-func (r *repository) FindOne(ctx context.Context, id int) (food.Food, error) {
-	//TODO implement me
-	panic("implement me")
+func (r *repository) FindOne(ctx context.Context, id int) (fd food.Food, err error) {
+	q := `
+	SELECT 
+	    id, food_name, description, calories, proteins, carbohydrates, fats, author_id, likes, picture 
+	FROM public.food WHERE id = $1;
+	`
+	rw := r.client.QueryRow(ctx, q, id)
+	if err = rw.Scan(
+		&fd.Id, &fd.Name,
+		&fd.Description, &fd.Calories,
+		&fd.Proteins, &fd.Carbohydrates,
+		&fd.Fats, &fd.AuthorId,
+		&fd.Likes, &fd.Picture,
+	); err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			r.log.Error("Data base error", slg.PgErr(*pgErr))
+			return fd, err
+		}
+		return fd, err
+	}
+	return
 }
 
-func (r *repository) Update(ctx context.Context, id int) (food.Food, error) {
-	//TODO implement me
-	panic("implement me")
+func (r *repository) Update(ctx context.Context, fd food.Food) error {
+	q := `
+	UPDATE public.food SET
+		food_name=$2, description=$3, 
+		calories=$4, proteins = $5, 
+		carbohydrates = $6, fats = $7,
+		picture = $8
+	WHERE id = $1;
+	`
+	r.client.QueryRow(ctx, q,
+		&fd.Id, &fd.Name,
+		&fd.Description, &fd.Calories,
+		&fd.Proteins, &fd.Carbohydrates,
+		&fd.Fats, &fd.Picture,
+	)
+	return nil
 }
 
 func (r *repository) Delete(ctx context.Context, id int) (food.Food, error) {

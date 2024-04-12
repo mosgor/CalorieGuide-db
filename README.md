@@ -74,7 +74,7 @@ Response example:
 }
 ```
 
-- Полуние данных по одному продукту `GET /product/<product_id>` **Скоро будет добавлено**
+- Полуние данных по одному продукту `GET /product/<product_id>`
 
 Response example:
 
@@ -93,7 +93,7 @@ Response example:
 }
 ```
 
-- Обновление данных продукта `PUT /product/<product_id>` **Скоро будет добавлено**
+- Обновление данных продукта `PUT /product/<product_id>`
 
 Request example:
 
