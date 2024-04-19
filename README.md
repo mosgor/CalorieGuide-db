@@ -156,7 +156,7 @@ Request example:
 
 ```json
 {
-  "name": "string",
+  "user_name": "string",
   "surname": "string",
   "email": "string",
   "password": "string"
@@ -168,7 +168,7 @@ Response example:
 ```json
 {
   "id": "number",
-  "name": "string",
+  "user_name": "string",
   "surname": "string",
   "email": "string",
   "password": "string"
@@ -191,7 +191,7 @@ Response example:
 ```json
 {
   "id": "number",
-  "name": "string",
+  "user_name": "string",
   "surname": "string",
   "email": "string",
   "password": "string",
@@ -199,28 +199,14 @@ Response example:
 }
 ```
 
-- Получение информации о пользователе `GET /user/<user_id>` ***Скоро будет добавлено***
-
-Response example:
-
-```json
-{
-  "id": "number",
-  "name": "string",
-  "surname": "string",
-  "email": "string",
-  "password": "string"
-}
-```
-
-- Обновление информации о пользователе `PUT /user/<user_id>` ***Скоро будет добавлено***  
+- Обновление информации о пользователе `PUT /user/<user_id>`
 **Требуется авторизация по токену**
 
 Request example:
 
 ```json
 {
-  "name": "string",
+  "user_name": "string",
   "surname": "string",
   "email": "string",
   "password": "string"
@@ -232,7 +218,7 @@ Response example:
 ```json
 {
   "id": "number",
-  "name": "string",
+  "user_name": "string",
   "surname": "string",
   "email": "string",
   "password": "string"
@@ -247,7 +233,7 @@ Response example:
 ```json
 {
   "id": "number",
-  "name": "string",
+  "user_name": "string",
   "surname": "string",
   "email": "string",
   "password": "string"

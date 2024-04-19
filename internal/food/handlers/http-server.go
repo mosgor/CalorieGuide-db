@@ -34,7 +34,7 @@ func NewFindAll(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 		var req FindAllRequest
-		var sortType string = "fromNewest"
+		var sortType = "fromNewest"
 		if r.Body != http.NoBody {
 			err := render.DecodeJSON(r.Body, &req)
 			if err != nil {

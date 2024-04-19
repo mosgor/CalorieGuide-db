@@ -50,6 +50,7 @@ func main() {
 		r.Use(jwtauth.Authenticator(config.GetToken(log)))
 		r.Post("/product", food.NewAdd(log, foodRepo))
 		r.Put("/products/{id}", food.NewUpdate(log, foodRepo))
+		r.Put("/user/{id}", client.NewUpdate(log, clientRepo))
 	})
 
 	router.Get("/products", food.NewFindAll(log, foodRepo))

@@ -85,12 +85,19 @@ func (r *repository) FindByEmail(ctx context.Context, email string) (cl client.C
 	return
 }
 
-func (r *repository) FindOne(ctx context.Context, id int) (client.Client, error) {
-	return client.Client{}, nil
-}
-
-func (r *repository) Update(ctx context.Context, id int) (client.Client, error) {
-	panic("implement me")
+func (r *repository) Update(ctx context.Context, cl client.Client) error {
+	q := `
+	UPDATE public.client SET
+		user_name=$2, surname=$3,
+		email=$4, password=$5
+	WHERE id = $1;
+	`
+	r.client.QueryRow(ctx, q,
+		&cl.Id, &cl.Name,
+		&cl.Surname, &cl.Email,
+		&cl.Password,
+	)
+	return nil
 }
 
 func (r *repository) Delete(ctx context.Context, id int) (client.Client, error) {

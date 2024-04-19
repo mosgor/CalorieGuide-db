@@ -4,10 +4,13 @@ import (
 	"CalorieGuide-db/internal/client"
 	"CalorieGuide-db/internal/config"
 	"CalorieGuide-db/internal/lib/logger/slg"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-chi/render"
 	"log/slog"
 	"net/http"
+	"strconv"
 )
 
 type FindMailRequest struct {
@@ -86,5 +89,43 @@ func FindEmail(log *slog.Logger, repository client.Repository) http.HandlerFunc 
 		resp := FindMailResponse{cli, tokenString}
 		w.Header().Set("Content-Type", "application/json")
 		render.JSON(w, r, resp)
+	}
+}
+
+func NewUpdate(log *slog.Logger, repository client.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "client.handlers.NewUpdate"
+		log = log.With(
+			slog.String("op", op),
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+		var req client.Client
+		err := render.DecodeJSON(r.Body, &req)
+		if err != nil {
+			log.Error("Failed to parse request body", slg.Err(err))
+			return
+		}
+		clientId, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			log.Error("Failed to get client Id", slg.Err(err))
+			return
+		}
+		_, claims, _ := jwtauth.FromContext(r.Context())
+		authorIdClaims := int(claims["id"].(float64))
+		if clientId != authorIdClaims {
+			log.Error("Error with authentication")
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		req.Id = clientId
+		err = repository.Update(r.Context(), req)
+		if err != nil {
+			log.Error("Failed to update client", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		render.JSON(w, r, req)
 	}
 }
