@@ -2,9 +2,10 @@
 
 *omitempty - поле может быть пропущено*
 
-# Продукты
+## Продукты
 
-- Создание продукта `POST /product`
+- Создание продукта `POST /product`  
+**Требуется авторизация по токену**
 
 Request example:
 
@@ -93,7 +94,8 @@ Response example:
 }
 ```
 
-- Обновление данных продукта `PUT /product/<product_id>`
+- Обновление данных продукта `PUT /product/<product_id>`  
+**Требуется авторизация по токену**
 
 Request example:
 
@@ -126,7 +128,8 @@ Response example:
 }
 ```
 
-- Удаление продукта `DELETE /product/<product_id>` **Скоро будет добавлено**
+- Удаление продукта `DELETE /product/<product_id>` ***Скоро будет добавлено***  
+**Требуется авторизация по токену**
 
 Response example:
 
@@ -145,7 +148,7 @@ Response example:
 }
 ```
 
-# Пользователь
+## Пользователь
 
 - Создание пользователя `POST /user`
 
@@ -172,7 +175,7 @@ Response example:
 }
 ```
 
-- Авторизация пользователя `GET /login`
+- Авторизация пользователя `POST /login`
 
 Request example:
 
@@ -191,11 +194,12 @@ Response example:
   "name": "string",
   "surname": "string",
   "email": "string",
-  "password": "string"
+  "password": "string",
+  "BearerToken": "string"
 }
 ```
 
-- Получение информации о пользователе `GET /user/<user_id>` **Скоро будет добавлено**
+- Получение информации о пользователе `GET /user/<user_id>` ***Скоро будет добавлено***
 
 Response example:
 
@@ -209,7 +213,8 @@ Response example:
 }
 ```
 
-- Обновление информации о пользователе `PUT /user/<user_id>` **Скоро будет добавлено**
+- Обновление информации о пользователе `PUT /user/<user_id>` ***Скоро будет добавлено***  
+**Требуется авторизация по токену**
 
 Request example:
 
@@ -234,7 +239,8 @@ Response example:
 }
 ```
 
-- Удаление пользователя `DELETE /user/<user_id>` **Скоро будет добавлено**
+- Удаление пользователя `DELETE /user/<user_id>` ***Скоро будет добавлено***  
+**Требуется авторизация по токену**
 
 Response example:
 
@@ -248,9 +254,9 @@ Response example:
 }
 ```
 
-# Диета
+## Диета
 
-- Получение информации о диете `GET /user/<user_id>/diet` **Скоро будет добавлено**
+- Получение информации о диете `GET /user/<user_id>/diet` ***Скоро будет добавлено***
 
 Response example: 
 
@@ -263,7 +269,8 @@ Response example:
 }
 ```
 
-- Обновление информации о диете `PUT /user/<user_id>/diet` **Скоро будет добавлено**
+- Обновление информации о диете `PUT /user/<user_id>/diet` ***Скоро будет добавлено***  
+**Требуется авторизация по токену**
 
 Request example:
 
@@ -286,9 +293,9 @@ Response example:
 }
 ```
 
-# Цели
+## Цели
 
-- Получение информации о цели `GET /user/<user_id>/goal` **Скоро будет добавлено**
+- Получение информации о цели `GET /user/<user_id>/goal` ***Скоро будет добавлено***
 
 Response example:
 
@@ -302,7 +309,8 @@ Response example:
 }
 ```
 
-- Обновление информации о цели `PUT /user/<user_id>/goal` **Скоро будет добавлено**
+- Обновление информации о цели `PUT /user/<user_id>/goal` ***Скоро будет добавлено***  
+**Требуется авторизация по токену**
 
 Request example:
 

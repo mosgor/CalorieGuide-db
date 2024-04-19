@@ -11,6 +11,7 @@ import (
 	"context"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/jwtauth/v5"
 	"log/slog"
 	"net/http"
 	"os"
@@ -44,12 +45,17 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
+	router.Group(func(r chi.Router) {
+		r.Use(jwtauth.Verifier(config.GetToken(log)))
+		r.Use(jwtauth.Authenticator(config.GetToken(log)))
+		r.Post("/product", food.NewAdd(log, foodRepo))
+		r.Put("/products/{id}", food.NewUpdate(log, foodRepo))
+	})
+
 	router.Get("/products", food.NewFindAll(log, foodRepo))
-	router.Post("/product", food.NewAdd(log, foodRepo))
 	router.Post("/user", client.NewAdd(log, clientRepo))
 	router.Post("/login", client.FindEmail(log, clientRepo))
 	router.Get("/products/{id}", food.NewFindOne(log, foodRepo))
-	router.Put("/products/{id}", food.NewUpdate(log, foodRepo))
 
 	log.Info("starting server", slog.String("addr", cfg.Address))
 	srv := &http.Server{

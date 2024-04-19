@@ -3,7 +3,9 @@ package food
 import (
 	"CalorieGuide-db/internal/food"
 	"CalorieGuide-db/internal/lib/logger/slg"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-chi/render"
 	"log/slog"
 	"net/http"
@@ -64,6 +66,14 @@ func NewAdd(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 		err := render.DecodeJSON(r.Body, &req)
 		if err != nil {
 			log.Error("Failed to parse request body", slg.Err(err))
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		_, claims, _ := jwtauth.FromContext(r.Context())
+		authorFromClaims := int(claims["id"].(float64))
+		if req.AuthorId != authorFromClaims {
+			log.Error("Error with authentication")
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 		err = repository.Create(r.Context(), &req)
@@ -85,7 +95,7 @@ func NewFindOne(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 			slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
-		prodId, err := strconv.Atoi(r.PathValue("id"))
+		prodId, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
 			log.Error("Failed to get food Id", slg.Err(err))
 			return
@@ -115,9 +125,22 @@ func NewUpdate(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 			log.Error("Failed to parse request body", slg.Err(err))
 			return
 		}
-		prodId, err := strconv.Atoi(r.PathValue("id"))
+		prodId, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
 			log.Error("Failed to get food Id", slg.Err(err))
+			return
+		}
+		fd, err := repository.FindOne(r.Context(), prodId)
+		if err != nil {
+			log.Error("There is no such product", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		_, claims, _ := jwtauth.FromContext(r.Context())
+		authorIdClaims := int(claims["id"].(float64))
+		if fd.AuthorId != authorIdClaims {
+			log.Error("Error with authentication")
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 		req.Id = prodId
