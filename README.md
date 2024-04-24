@@ -41,8 +41,8 @@ Response example:
 
 - Получение данных по всем продуктам `GET /products`
 
-Если отправить пустой запрос, то режим сортировки по умолчанию будет от новейшего
-Значение `likesAsc` означает `ascending` (по возрастанию лайков)
+Если отправить пустой запрос, то режим сортировки по умолчанию будет от новейшего  
+Значение `likesAsc` означает `ascending` (по возрастанию лайков)  
 Значение `likesDesc` означает `descending` (по убыванию лайков)
 
 Request example:
@@ -148,6 +148,30 @@ Response example:
 }
 ```
 
+- Лайк `POST /like`  
+**Требуется авторизация по токену**
+
+Отправка лайка пользователем уже поставившим его на продукт, удалит его
+
+Request example:
+
+```json
+{
+  "user_id": "number",
+  "product_id": "number"
+}
+```
+
+Response example:
+
+```json
+{
+  "user_id": "number",
+  "product_id": "number",
+  "action": "liked/disliked"
+}
+```
+
 ## Пользователь
 
 - Создание пользователя `POST /user`
@@ -159,7 +183,8 @@ Request example:
   "user_name": "string",
   "surname": "string",
   "email": "string",
-  "password": "string"
+  "password": "string",
+  "picture": "int8[],omitempty"
 }
 ```
 
@@ -171,7 +196,8 @@ Response example:
   "user_name": "string",
   "surname": "string",
   "email": "string",
-  "password": "string"
+  "password": "string",
+  "picture": "int8[],omitempty"
 }
 ```
 
@@ -195,6 +221,7 @@ Response example:
   "surname": "string",
   "email": "string",
   "password": "string",
+  "picture": "int8[],omitempty",
   "BearerToken": "string"
 }
 ```
@@ -209,7 +236,8 @@ Request example:
   "user_name": "string",
   "surname": "string",
   "email": "string",
-  "password": "string"
+  "password": "string",
+  "picture": "int8[],omitempty"
 }
 ```
 
@@ -221,7 +249,8 @@ Response example:
   "user_name": "string",
   "surname": "string",
   "email": "string",
-  "password": "string"
+  "password": "string",
+  "picture": "int8[],omitempty"
 }
 ```
 
@@ -236,7 +265,8 @@ Response example:
   "user_name": "string",
   "surname": "string",
   "email": "string",
-  "password": "string"
+  "password": "string",
+  "picture": "int8[],omitempty"
 }
 ```
 

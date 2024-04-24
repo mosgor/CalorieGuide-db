@@ -129,6 +129,32 @@ func (r *repository) Delete(ctx context.Context, id int) (err error) {
 	return
 }
 
+func (r *repository) Like(ctx context.Context, prodId int, userId int) (liked bool, err error) {
+	q := `
+	SELECT EXISTS (SELECT 1 FROM public.food_client WHERE food_id = $1 AND user_id = $2)
+	`
+	var exists bool
+	rw := r.client.QueryRow(ctx, q, prodId, userId)
+	err = rw.Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	if exists {
+		q = `
+		DELETE FROM public.food_client WHERE food_id = $1 AND user_id = $2
+		`
+		r.client.QueryRow(ctx, q, prodId, userId)
+		liked = false
+	} else {
+		q = `
+		INSERT INTO public.food_client (food_id, user_id) VALUES ($1, $2)
+		`
+		r.client.QueryRow(ctx, q, prodId, userId)
+		liked = true
+	}
+	return
+}
+
 func NewRepository(client postgreSQL.Client, log *slog.Logger) food.Repository {
 	return &repository{
 		client: client,

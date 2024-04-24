@@ -26,6 +26,12 @@ type AddResponse struct {
 	Product food.Food `json:"product"`
 }
 
+type LikeResponse struct {
+	UserId int    `json:"user_id"`
+	FoodId int    `json:"food_id"`
+	Action string `json:"action"`
+}
+
 func NewFindAll(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "food.handlers.NewFindAll"
@@ -196,5 +202,43 @@ func NewDelete(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		render.JSON(w, r, fd)
+	}
+}
+
+func NewLike(log *slog.Logger, repository food.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "food.handlers.NewLike"
+		log = log.With(
+			slog.String("op", op),
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+		var req LikeResponse
+		err := render.DecodeJSON(r.Body, &req)
+		if err != nil {
+			log.Error("Failed to parse request body", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		_, claims, _ := jwtauth.FromContext(r.Context())
+		idClaims := int(claims["id"].(float64))
+		if req.UserId != idClaims {
+			log.Error("Error with authentication")
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		liked, err := repository.Like(r.Context(), req.FoodId, req.UserId)
+		if err != nil {
+			log.Error("There is no such product or user", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		if liked {
+			req.Action = "liked"
+		} else {
+			req.Action = "disliked"
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		render.JSON(w, r, req)
 	}
 }
