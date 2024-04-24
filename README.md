@@ -18,7 +18,7 @@ Request example:
   "carbohydrates": "number",
   "fats": "number",
   "author_id": "number",
-  "picture": "byte[],omitempty"
+  "picture": "int8[],omitempty"
 }
 ```
 
@@ -35,7 +35,7 @@ Response example:
   "fats": "number",
   "author_id": "number",
   "likes": "number,omitempty",
-  "picture": "byte[],omitempty"
+  "picture": "int8[],omitempty"
 }
 ```
 
@@ -68,7 +68,7 @@ Response example:
       "fats": "number",
       "author_id": "number",
       "likes": "number,omitempty",
-      "picture": "byte[],omitempty"
+      "picture": "int8[],omitempty"
     },
     "..."
   ]
@@ -90,7 +90,7 @@ Response example:
   "fats": "number",
   "author_id": "number",
   "likes": "number,omitempty",
-  "picture": "byte[],omitempty"
+  "picture": "int8[],omitempty"
 }
 ```
 
@@ -107,7 +107,7 @@ Request example:
   "proteins": "number",
   "carbohydrates": "number",
   "fats": "number",
-  "picture": "byte[],omitempty"
+  "picture": "int8[],omitempty"
 }
 ```
 
@@ -124,11 +124,11 @@ Response example:
   "fats": "number",
   "author_id": "number",
   "likes": "number,omitempty",
-  "picture": "byte[],omitempty"
+  "picture": "int8[],omitempty"
 }
 ```
 
-- Удаление продукта `DELETE /product/<product_id>` ***Скоро будет добавлено***  
+- Удаление продукта `DELETE /product/<product_id>`  
 **Требуется авторизация по токену**
 
 Response example:
@@ -144,7 +144,7 @@ Response example:
   "fats": "number",
   "author_id": "number",
   "likes": "number,omitempty",
-  "picture": "byte[],omitempty"
+  "picture": "int8[],omitempty"
 }
 ```
 
@@ -225,7 +225,7 @@ Response example:
 }
 ```
 
-- Удаление пользователя `DELETE /user/<user_id>` ***Скоро будет добавлено***  
+- Удаление пользователя `DELETE /user/<user_id>`
 **Требуется авторизация по токену**
 
 Response example:

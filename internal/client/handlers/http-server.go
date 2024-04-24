@@ -129,3 +129,41 @@ func NewUpdate(log *slog.Logger, repository client.Repository) http.HandlerFunc 
 		render.JSON(w, r, req)
 	}
 }
+
+func NewDelete(log *slog.Logger, repository client.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "client.handlers.NewDelete"
+		log = log.With(
+			slog.String("op", op),
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+		clientId, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			log.Error("Failed to get client Id", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		_, claims, _ := jwtauth.FromContext(r.Context())
+		authorIdClaims := int(claims["id"].(float64))
+		if clientId != authorIdClaims {
+			log.Error("Error with authentication")
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		cl, err := repository.FindById(r.Context(), clientId)
+		if err != nil {
+			log.Error("Failed to find client", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		err = repository.Delete(r.Context(), clientId)
+		if err != nil {
+			log.Error("Failed to delete client", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		render.JSON(w, r, cl)
+	}
+}

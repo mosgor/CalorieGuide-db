@@ -121,9 +121,12 @@ func (r *repository) Update(ctx context.Context, fd food.Food) error {
 	return nil
 }
 
-func (r *repository) Delete(ctx context.Context, id int) (food.Food, error) {
-	//TODO implement me
-	panic("implement me")
+func (r *repository) Delete(ctx context.Context, id int) (err error) {
+	q := `
+	DELETE FROM public.food WHERE id = $1;
+	`
+	r.client.QueryRow(ctx, q, id)
+	return
 }
 
 func NewRepository(client postgreSQL.Client, log *slog.Logger) food.Repository {

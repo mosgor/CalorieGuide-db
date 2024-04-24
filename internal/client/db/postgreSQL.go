@@ -85,6 +85,28 @@ func (r *repository) FindByEmail(ctx context.Context, email string) (cl client.C
 	return
 }
 
+func (r *repository) FindById(ctx context.Context, id int) (cl client.Client, err error) {
+	q := `
+	SELECT id, user_name, surname, email, password
+	FROM public.client
+	WHERE id = $1
+	`
+	rw := r.client.QueryRow(ctx, q, id)
+	if err = rw.Scan(
+		&cl.Id, &cl.Name,
+		&cl.Surname, &cl.Email,
+		&cl.Password,
+	); err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			r.log.Error("Data base error", slg.PgErr(*pgErr))
+			return cl, err
+		}
+		return cl, err
+	}
+	return
+}
+
 func (r *repository) Update(ctx context.Context, cl client.Client) error {
 	q := `
 	UPDATE public.client SET
@@ -100,8 +122,12 @@ func (r *repository) Update(ctx context.Context, cl client.Client) error {
 	return nil
 }
 
-func (r *repository) Delete(ctx context.Context, id int) (client.Client, error) {
-	panic("implement me")
+func (r *repository) Delete(ctx context.Context, id int) error {
+	q := `
+		DELETE FROM public.client WHERE id=$1;
+	`
+	r.client.QueryRow(ctx, q, id)
+	return nil
 }
 
 func NewRepository(client postgreSQL.Client, log *slog.Logger) client.Repository {

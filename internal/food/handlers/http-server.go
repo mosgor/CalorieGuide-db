@@ -161,3 +161,40 @@ func NewUpdate(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 		render.JSON(w, r, product)
 	}
 }
+
+func NewDelete(log *slog.Logger, repository food.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "food.handlers.NewDelete"
+		log = log.With(
+			slog.String("op", op),
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+		prodId, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			log.Error("Failed to get food Id", slg.Err(err))
+			return
+		}
+		fd, err := repository.FindOne(r.Context(), prodId)
+		if err != nil {
+			log.Error("There is no such product", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		_, claims, _ := jwtauth.FromContext(r.Context())
+		authorIdClaims := int(claims["id"].(float64))
+		if fd.AuthorId != authorIdClaims {
+			log.Error("Error with authentication")
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		err = repository.Delete(r.Context(), prodId)
+		if err != nil {
+			log.Error("There is no such product", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		render.JSON(w, r, fd)
+	}
+}

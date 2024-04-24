@@ -48,14 +48,23 @@ func main() {
 	router.Group(func(r chi.Router) {
 		r.Use(jwtauth.Verifier(config.GetToken(log)))
 		r.Use(jwtauth.Authenticator(config.GetToken(log)))
+
+		// Product routes
 		r.Post("/product", food.NewAdd(log, foodRepo))
 		r.Put("/products/{id}", food.NewUpdate(log, foodRepo))
+		r.Delete("/products/{id}", food.NewDelete(log, foodRepo))
+
+		// Client routes
 		r.Put("/user/{id}", client.NewUpdate(log, clientRepo))
+		r.Delete("/user/{id}", client.NewDelete(log, clientRepo))
 	})
 
-	router.Get("/products", food.NewFindAll(log, foodRepo))
+	// Client routes
 	router.Post("/user", client.NewAdd(log, clientRepo))
 	router.Post("/login", client.FindEmail(log, clientRepo))
+
+	// Product routes
+	router.Get("/products", food.NewFindAll(log, foodRepo))
 	router.Get("/products/{id}", food.NewFindOne(log, foodRepo))
 
 	log.Info("starting server", slog.String("addr", cfg.Address))
