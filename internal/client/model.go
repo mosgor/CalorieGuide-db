@@ -6,6 +6,20 @@ type Client struct {
 	Surname  string `json:"surname"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
-	Goal     int    `json:"goal_id,omitempty"`
-	Diet     int    `json:"diet_id,omitempty"`
+	Picture  []int8 `json:"picture,omitempty"`
+}
+
+type Diet struct {
+	Id          int `json:"diet_id,omitempty"`
+	BreakfastId int `json:"breakfast_id,omitempty"`
+	LunchId     int `json:"lunch_id,omitempty"`
+	DinnerId    int `json:"dinner_id,omitempty"`
+}
+
+type Goal struct {
+	Id                int `json:"diet_id,omitempty"`
+	CaloriesGoal      int `json:"calories_goal"`
+	FatsGoal          int `json:"fats_goal"`
+	ProteinsGoal      int `json:"proteins_goal"`
+	CarbohydratesGoal int `json:"carbohydrates_goal"`
 }

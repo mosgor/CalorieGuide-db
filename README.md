@@ -148,7 +148,7 @@ Response example:
 }
 ```
 
-- Лайк `POST /like`  
+- Лайк `POST /products/like`  
 **Требуется авторизация по токену**
 
 Отправка лайка пользователем уже поставившим его на продукт, удалит его
@@ -222,11 +222,18 @@ Response example:
   "email": "string",
   "password": "string",
   "picture": "int8[],omitempty",
+  "breakfast_id": "number,omitempty",
+  "lunch_id": "number,omitempty",
+  "dinner_id": "number,omitempty",
+  "calories_goal": "number",
+  "fats_goal": "number",
+  "proteins_goal": "number",
+  "carbohydrates_goal": "number",
   "BearerToken": "string"
 }
 ```
 
-- Обновление информации о пользователе `PUT /user/<user_id>`
+- Обновление информации о пользователе `PUT /user/<user_id>`  
 **Требуется авторизация по токену**
 
 Request example:
@@ -237,87 +244,10 @@ Request example:
   "surname": "string",
   "email": "string",
   "password": "string",
-  "picture": "int8[],omitempty"
-}
-```
-
-Response example:
-
-```json
-{
-  "id": "number",
-  "user_name": "string",
-  "surname": "string",
-  "email": "string",
-  "password": "string",
-  "picture": "int8[],omitempty"
-}
-```
-
-- Удаление пользователя `DELETE /user/<user_id>`
-**Требуется авторизация по токену**
-
-Response example:
-
-```json
-{
-  "id": "number",
-  "user_name": "string",
-  "surname": "string",
-  "email": "string",
-  "password": "string",
-  "picture": "int8[],omitempty"
-}
-```
-
-## Диета
-
-- Получение информации о диете `GET /user/<user_id>/diet` ***Скоро будет добавлено***
-
-Response example: 
-
-```json
-{
-  "id": "number",
-  "breakfast_id": "number",
-  "lunch_id": "number",
-  "dinner_id": "number"
-}
-```
-
-- Обновление информации о диете `PUT /user/<user_id>/diet` ***Скоро будет добавлено***  
-**Требуется авторизация по токену**
-
-Request example:
-
-```json
-{
+  "picture": "int8[],omitempty",
   "breakfast_id": "number,omitempty",
   "lunch_id": "number,omitempty",
-  "dinner_id": "number,omitempty"
-}
-```
-
-Response example:
-
-```json
-{
-  "id": "number",
-  "breakfast_id": "number",
-  "lunch_id": "number",
-  "dinner_id": "number"
-}
-```
-
-## Цели
-
-- Получение информации о цели `GET /user/<user_id>/goal` ***Скоро будет добавлено***
-
-Response example:
-
-```json
-{
-  "id": "number",
+  "dinner_id": "number,omitempty",
   "calories_goal": "number",
   "fats_goal": "number",
   "proteins_goal": "number",
@@ -325,25 +255,42 @@ Response example:
 }
 ```
 
-- Обновление информации о цели `PUT /user/<user_id>/goal` ***Скоро будет добавлено***  
-**Требуется авторизация по токену**
-
-Request example:
+Response example:
 
 ```json
 {
-  "calories_goal": "number,omitempty",
-  "fats_goal": "number,omitempty",
-  "proteins_goal": "number,omitempty",
-  "carbohydrates_goal": "number,omitempty"
+  "id": "number",
+  "user_name": "string",
+  "surname": "string",
+  "email": "string",
+  "password": "string",
+  "picture": "int8[],omitempty",
+  "breakfast_id": "number,omitempty",
+  "lunch_id": "number,omitempty",
+  "dinner_id": "number,omitempty",
+  "calories_goal": "number",
+  "fats_goal": "number",
+  "proteins_goal": "number",
+  "carbohydrates_goal": "number"
 }
 ```
+
+- Удаление пользователя `DELETE /user/<user_id>`  
+**Требуется авторизация по токену**
 
 Response example:
 
 ```json
 {
   "id": "number",
+  "user_name": "string",
+  "surname": "string",
+  "email": "string",
+  "password": "string",
+  "picture": "int8[],omitempty",
+  "breakfast_id": "number,omitempty",
+  "lunch_id": "number,omitempty",
+  "dinner_id": "number,omitempty",
   "calories_goal": "number",
   "fats_goal": "number",
   "proteins_goal": "number",

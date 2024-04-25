@@ -145,12 +145,20 @@ func (r *repository) Like(ctx context.Context, prodId int, userId int) (liked bo
 		`
 		r.client.QueryRow(ctx, q, prodId, userId)
 		liked = false
+		q = `
+		UPDATE public.food SET likes = likes - 1 WHERE id = $1
+		`
+		r.client.QueryRow(ctx, q, prodId)
 	} else {
 		q = `
 		INSERT INTO public.food_client (food_id, user_id) VALUES ($1, $2)
 		`
 		r.client.QueryRow(ctx, q, prodId, userId)
 		liked = true
+		q = `
+		UPDATE public.food SET likes = likes + 1 WHERE id = $1
+		`
+		r.client.QueryRow(ctx, q, prodId)
 	}
 	return
 }

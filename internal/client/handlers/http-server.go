@@ -20,7 +20,15 @@ type FindMailRequest struct {
 
 type FindMailResponse struct {
 	client.Client
+	client.Diet
+	client.Goal
 	BearerToken string
+}
+
+type clientFull struct {
+	client.Client
+	client.Diet
+	client.Goal
 }
 
 func NewAdd(log *slog.Logger, repository client.Repository) http.HandlerFunc {
@@ -50,6 +58,7 @@ func NewAdd(log *slog.Logger, repository client.Repository) http.HandlerFunc {
 			Surname:  req.Surname,
 			Email:    req.Email,
 			Password: req.Password,
+			Picture:  req.Picture,
 		})
 	}
 }
@@ -79,6 +88,18 @@ func FindEmail(log *slog.Logger, repository client.Repository) http.HandlerFunc 
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
+		goal, err := repository.FindGoalById(r.Context(), cli.Id)
+		if err != nil {
+			log.Error("Failed to find goal", slg.Err(err))
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		diet, err := repository.FindDietById(r.Context(), cli.Id)
+		if err != nil {
+			log.Error("Failed to find diet", slg.Err(err))
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		claims := map[string]interface{}{"id": cli.Id, "email": cli.Email, "password": cli.Password}
 		_, tokenString, err := config.GetToken(log).Encode(claims)
 		if err != nil {
@@ -86,7 +107,7 @@ func FindEmail(log *slog.Logger, repository client.Repository) http.HandlerFunc 
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		resp := FindMailResponse{cli, tokenString}
+		resp := FindMailResponse{cli, diet, goal, tokenString}
 		w.Header().Set("Content-Type", "application/json")
 		render.JSON(w, r, resp)
 	}
@@ -99,10 +120,10 @@ func NewUpdate(log *slog.Logger, repository client.Repository) http.HandlerFunc 
 			slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
-		var req client.Client
+		var req clientFull
 		err := render.DecodeJSON(r.Body, &req)
 		if err != nil {
-			log.Error("Failed to parse request body", slg.Err(err))
+			log.Error("Failed to parse request body for client", slg.Err(err))
 			return
 		}
 		clientId, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -117,15 +138,30 @@ func NewUpdate(log *slog.Logger, repository client.Repository) http.HandlerFunc 
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		req.Id = clientId
-		err = repository.Update(r.Context(), req)
+		req.Client.Id = clientId
+		err = repository.UpdateClient(r.Context(), req.Client)
 		if err != nil {
 			log.Error("Failed to update client", slg.Err(err))
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
+		err = repository.UpdateDiet(r.Context(), req.Diet, req.Client.Id)
+		if err != nil {
+			log.Error("Failed to update diet", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		err = repository.UpdateGoal(r.Context(), req.Goal, req.Client.Id)
+		if err != nil {
+			log.Error("Failed to update goal", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		req.Client, _ = repository.FindById(r.Context(), req.Client.Id)
+		req.Diet, _ = repository.FindDietById(r.Context(), req.Client.Id)
+		req.Goal, _ = repository.FindGoalById(r.Context(), req.Goal.Id)
 		render.JSON(w, r, req)
 	}
 }
@@ -156,6 +192,18 @@ func NewDelete(log *slog.Logger, repository client.Repository) http.HandlerFunc 
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
+		goal, err := repository.FindGoalById(r.Context(), clientId)
+		if err != nil {
+			log.Error("Failed to find goal", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		diet, err := repository.FindDietById(r.Context(), clientId)
+		if err != nil {
+			log.Error("Failed to find diet", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 		err = repository.Delete(r.Context(), clientId)
 		if err != nil {
 			log.Error("Failed to delete client", slg.Err(err))
@@ -164,6 +212,6 @@ func NewDelete(log *slog.Logger, repository client.Repository) http.HandlerFunc 
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		render.JSON(w, r, cl)
+		render.JSON(w, r, clientFull{cl, diet, goal})
 	}
 }
