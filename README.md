@@ -75,7 +75,7 @@ Response example:
 }
 ```
 
-- Полуние данных по одному продукту `GET /product/<product_id>`
+- Полуние данных по одному продукту `GET /products/<product_id>`
 
 Response example:
 
@@ -94,7 +94,7 @@ Response example:
 }
 ```
 
-- Обновление данных продукта `PUT /product/<product_id>`  
+- Обновление данных продукта `PUT /products/<product_id>`  
 **Требуется авторизация по токену**
 
 Request example:
@@ -128,7 +128,7 @@ Response example:
 }
 ```
 
-- Удаление продукта `DELETE /product/<product_id>`  
+- Удаление продукта `DELETE /products/<product_id>`  
 **Требуется авторизация по токену**
 
 Response example:

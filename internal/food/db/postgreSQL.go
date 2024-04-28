@@ -122,9 +122,11 @@ func (r *repository) Update(ctx context.Context, fd food.Food) error {
 }
 
 func (r *repository) Delete(ctx context.Context, id int) (err error) {
-	q := `
-	DELETE FROM public.food WHERE id = $1;
-	`
+	q := `DELETE FROM public.food_client WHERE food_id = $1`
+	r.client.QueryRow(ctx, q, id)
+	q = `DELETE FROM public.meal_food WHERE food_id = $1`
+	r.client.QueryRow(ctx, q, id)
+	q = `DELETE FROM public.food WHERE id = $1;`
 	r.client.QueryRow(ctx, q, id)
 	return
 }
@@ -151,7 +153,7 @@ func (r *repository) Like(ctx context.Context, prodId int, userId int) (liked bo
 		r.client.QueryRow(ctx, q, prodId)
 	} else {
 		q = `
-		INSERT INTO public.food_client (food_id, user_id) VALUES ($1, $2)
+		INSERT INTO food_client (food_id, user_id) VALUES ($1, $2)
 		`
 		r.client.QueryRow(ctx, q, prodId, userId)
 		liked = true

@@ -2,6 +2,7 @@ package client
 
 import (
 	"CalorieGuide-db/internal/client"
+	"CalorieGuide-db/internal/food"
 	"CalorieGuide-db/internal/lib/logger/slg"
 	"CalorieGuide-db/internal/storage/postgreSQL"
 	"context"
@@ -169,13 +170,29 @@ func (r *repository) UpdateDiet(ctx context.Context, diet client.Diet, dietId in
 	return nil
 }
 
-func (r *repository) Delete(ctx context.Context, id int) error {
+func (r *repository) Delete(ctx context.Context, id int, fdRepo food.Repository) error {
 	q := `DELETE FROM public.food_client WHERE user_id=$1`
 	r.client.QueryRow(ctx, q, id)
 	q = `DELETE FROM public.meal_client WHERE user_id=$1`
 	r.client.QueryRow(ctx, q, id)
-	q = `DELETE FROM public.food WHERE author_id=$1`
-	r.client.QueryRow(ctx, q, id)
+	//q = `DELETE FROM public.food WHERE author_id=$1`
+	//r.client.QueryRow(ctx, q, id)
+	q = `SELECT id FROM public.food WHERE author_id=$1`
+	rows, err := r.client.Query(ctx, q, id)
+	if err != nil {
+		return err
+	}
+	for rows.Next() {
+		foodId := 0
+		err = rows.Scan(&foodId)
+		if err != nil {
+			return err
+		}
+		err = fdRepo.Delete(ctx, foodId)
+		if err != nil {
+			return err
+		}
+	}
 	q = `DELETE FROM public.client WHERE id=$1`
 	r.client.QueryRow(ctx, q, id)
 	q = `DELETE FROM public.goal WHERE id=$1`

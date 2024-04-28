@@ -29,7 +29,7 @@ type AddResponse struct {
 type LikeResponse struct {
 	UserId int    `json:"user_id"`
 	FoodId int    `json:"food_id"`
-	Action string `json:"action"`
+	Action string `json:"action,omitempty"`
 }
 
 func NewFindAll(log *slog.Logger, repository food.Repository) http.HandlerFunc {
@@ -228,7 +228,7 @@ func NewLike(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 		}
 		liked, err := repository.Like(r.Context(), req.FoodId, req.UserId)
 		if err != nil {
-			log.Error("There is no such product or user", slg.Err(err))
+			log.Error("Some problem with like", slg.Err(err))
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}

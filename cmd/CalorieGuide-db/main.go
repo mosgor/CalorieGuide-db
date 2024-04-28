@@ -15,6 +15,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 )
 
 const (
@@ -30,7 +31,7 @@ func main() {
 	log.Info("starting db-access", slog.String("env", cfg.Env))
 	log.Debug("debug messages are enabled")
 
-	storage, err := postgreSQL.New(context.TODO(), 3, cfg.Timeout)
+	storage, err := postgreSQL.New(context.TODO(), 3, 10)
 	if err != nil {
 		log.Error("failed to init storage", slg.Err(err))
 		os.Exit(1)
@@ -44,6 +45,7 @@ func main() {
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
+	router.Use(middleware.Timeout(5 * time.Second))
 
 	router.Group(func(r chi.Router) {
 		r.Use(jwtauth.Verifier(config.GetToken(log)))
@@ -57,7 +59,7 @@ func main() {
 
 		// Client routes
 		r.Put("/user/{id}", client.NewUpdate(log, clientRepo))
-		r.Delete("/user/{id}", client.NewDelete(log, clientRepo))
+		r.Delete("/user/{id}", client.NewDelete(log, clientRepo, foodRepo))
 	})
 
 	// Client routes
