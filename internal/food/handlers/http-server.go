@@ -13,7 +13,8 @@ import (
 )
 
 type FindAllRequest struct {
-	Sort string `json:"sort"`
+	Sort      string `json:"sort"`
+	TwoDecade int    `json:"two-decade,omitempty"`
 }
 
 type FindAllResponse struct {
@@ -41,15 +42,21 @@ func NewFindAll(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 		)
 		var req FindAllRequest
 		var sortType = "fromNewest"
+		var twoDecade = 1
 		if r.Body != http.NoBody {
 			err := render.DecodeJSON(r.Body, &req)
 			if err != nil {
 				log.Error("Failed to parse json")
 				return
 			}
-			sortType = req.Sort
+			if req.Sort != "" {
+				sortType = req.Sort
+			}
+			if req.TwoDecade != 0 {
+				twoDecade = req.TwoDecade
+			}
 		}
-		foods, err := repository.FindAll(r.Context(), sortType)
+		foods, err := repository.FindAll(r.Context(), sortType, twoDecade)
 		if err != nil {
 			log.Error("Failed to get all foods")
 			return

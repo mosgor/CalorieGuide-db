@@ -41,7 +41,7 @@ Response example:
 
 - Получение данных по всем продуктам `GET /products`
 
-Если отправить пустой запрос, то режим сортировки по умолчанию будет от новейшего  
+Если отправить пустой запрос, то режим сортировки по умолчанию будет от новейшего, а для вывода будет выбрана первая двадцатка
 Значение `likesAsc` означает `ascending` (по возрастанию лайков)  
 Значение `likesDesc` означает `descending` (по убыванию лайков)
 
@@ -49,7 +49,8 @@ Request example:
 
 ```json
 {
-  "sort": "likesAsc/likesDesc/fromNewest/fromOldest"
+  "sort": "likesAsc/likesDesc/fromNewest/fromOldest,omitempty",
+  "two-decade": "number,omitempty"
 }
 ```
 
@@ -295,5 +296,162 @@ Response example:
   "fats_goal": "number",
   "proteins_goal": "number",
   "carbohydrates_goal": "number"
+}
+```
+
+## Приёмы пищи
+
+- Получение всех приёмов пищи `GET /meals`
+
+Request example:
+
+```json
+{
+  "sort": "likesAsc/likesDesc/fromNewest/fromOldest,omitempty",
+  "two_decade": "number,omitempty"
+}
+```
+
+Response example:
+
+```json
+{
+  "meals": [
+    {
+      "id": "number",
+      "meal_name": "string",
+      "total_calories": "number",
+      "total_proteins": "number",
+      "total_fats": "number",
+      "total_carbohydrates": "number",
+      "products_id": [{"product_id": "number", "quantity": "number"}, "..."],
+      "author_id": "number",
+      "description": "string,omitempty",
+      "likes": "number,omitempty"
+    },
+    "..."
+  ]
+}
+```
+
+- Получение приёма пищи `GET /meals/<meal_id>`
+
+Response example:
+
+```json
+{
+  "id": "number",
+  "meal_name": "string",
+  "total_calories": "number",
+  "total_proteins": "number",
+  "total_fats": "number",
+  "total_carbohydrates": "number",
+  "products_id": [{"product_id": "number", "quantity": "number"}, "..."],
+  "author_id": "number",
+  "description": "string,omitempty",
+  "likes": "number,omitempty"
+}
+```
+
+- Добавление приёма пищи `POST /meal`  
+**Требуется авторизация по токену**
+
+Request example:
+
+```json
+{
+  "meal_name": "string",
+  "products_id": [{"product_id": "number", "quantity": "number"}, "..."],
+  "author_id": "number",
+  "description": "string,omitempty"
+}
+```
+
+Response example:
+
+```json
+{
+  "id": "number",
+  "meal_name": "string",
+  "total_calories": "number",
+  "total_proteins": "number",
+  "total_fats": "number",
+  "total_carbohydrates": "number",
+  "products_id": [{"product_id": "number", "quantity": "number"}, "..."],
+  "author_id": "number",
+  "description": "string,omitempty",
+  "likes": "number,omitempty"
+}
+```
+
+- Обновление информации о приёме пищи `PUT /meals/<meal_id>`  
+**Требуется авторизация по токену**
+
+Request example:
+
+```json
+{
+  "meal_name": "string",
+  "products_id": [{"product_id": "number", "quantity": "number"}, "..."],
+  "description": "string,omitempty"
+}
+```
+
+Response example:
+
+```json
+{
+  "id": "number",
+  "meal_name": "string",
+  "total_calories": "number",
+  "total_proteins": "number",
+  "total_fats": "number",
+  "total_carbohydrates": "number",
+  "products_id": [{"product_id": "number", "quantity": "number"}, "..."],
+  "author_id": "number",
+  "description": "string,omitempty",
+  "likes": "number,omitempty"
+}
+```
+
+- Лайк `POST /meals/like`  
+**Требуется авторизация по токену**
+
+Request example:
+
+```json
+{
+  "meal_id": "number",
+  "user_id": "number"
+}
+```
+
+Response example:
+
+```json
+{
+  "meal_id": "number",
+  "user_id": "number",
+  "action": "liked/disliked"
+}
+```
+
+- Удаление приёма пищи `DELETE /meals/<meal_id>`  
+**Требуется авторизация по токену**
+
+Response example:
+
+```json
+{
+  "id": "number",
+  "meal_name": "string",
+  "total_calories": "number",
+  "total_proteins": "number",
+  "total_fats": "number",
+  "total_carbohydrates": "number",
+  "products_id": [{"product_id": "number", "quantity": "number"}, "..."],
+  "author_id": "number",
+  "description": "string,omitempty",
+  "likes": "number,omitempty"
 }
 ```

@@ -37,7 +37,7 @@ func (r *repository) Create(ctx context.Context, food *food.Food) error {
 	return nil
 }
 
-func (r *repository) FindAll(ctx context.Context, sortType string) (u []food.Food, err error) {
+func (r *repository) FindAll(ctx context.Context, sortType string, twoDecade int) (u []food.Food, err error) {
 	q := `
 		SELECT 
 		    id, food_name, description, calories, proteins, carbohydrates, fats, author_id, likes, picture
@@ -53,9 +53,10 @@ func (r *repository) FindAll(ctx context.Context, sortType string) (u []food.Foo
 	case "fromNewest":
 		fallthrough
 	default:
-		q += `ORDER BY id DESC;`
+		q += `ORDER BY id DESC`
 	}
-	rows, err := r.client.Query(ctx, q)
+	q += ` OFFSET $1 LIMIT 20;`
+	rows, err := r.client.Query(ctx, q, (twoDecade-1)*20)
 	if err != nil {
 		return nil, err
 	}

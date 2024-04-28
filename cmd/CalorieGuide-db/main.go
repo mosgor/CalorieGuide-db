@@ -7,6 +7,8 @@ import (
 	food2 "CalorieGuide-db/internal/food/db"
 	food "CalorieGuide-db/internal/food/handlers"
 	"CalorieGuide-db/internal/lib/logger/slg"
+	meal2 "CalorieGuide-db/internal/meal/db"
+	meal "CalorieGuide-db/internal/meal/handlers"
 	"CalorieGuide-db/internal/storage/postgreSQL"
 	"context"
 	"github.com/go-chi/chi/v5"
@@ -39,6 +41,7 @@ func main() {
 
 	foodRepo := food2.NewRepository(storage, log)
 	clientRepo := client2.NewRepository(storage, log)
+	mealRepo := meal2.NewRepository(storage, log)
 
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
@@ -60,6 +63,11 @@ func main() {
 		// Client routes
 		r.Put("/user/{id}", client.NewUpdate(log, clientRepo))
 		r.Delete("/user/{id}", client.NewDelete(log, clientRepo, foodRepo))
+
+		// Meal routes
+		r.Post("/meal", meal.NewAdd(log, mealRepo, foodRepo))
+		r.Post("/meals/like", meal.NewLike(log, mealRepo))
+		r.Delete("/meals/{id}", meal.NewDelete(log, mealRepo))
 	})
 
 	// Client routes
@@ -69,6 +77,10 @@ func main() {
 	// Product routes
 	router.Get("/products", food.NewFindAll(log, foodRepo))
 	router.Get("/products/{id}", food.NewFindOne(log, foodRepo))
+
+	// Meal routes
+	router.Get("/meals", meal.NewFindAll(log, mealRepo))
+	router.Get("/meals/{id}", meal.NewFindOne(log, mealRepo))
 
 	log.Info("starting server", slog.String("addr", cfg.Address))
 	srv := &http.Server{
