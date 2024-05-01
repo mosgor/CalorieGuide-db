@@ -62,7 +62,7 @@ func main() {
 
 		// Client routes
 		r.Put("/user/{id}", client.NewUpdate(log, clientRepo))
-		r.Delete("/user/{id}", client.NewDelete(log, clientRepo, foodRepo))
+		r.Delete("/user/{id}", client.NewDelete(log, clientRepo, foodRepo, mealRepo))
 
 		// Meal routes
 		r.Post("/meal", meal.NewAdd(log, mealRepo, foodRepo))

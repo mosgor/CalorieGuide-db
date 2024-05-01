@@ -122,11 +122,23 @@ func (r *repository) Update(ctx context.Context, ml meal.Meal) error {
 
 func (r *repository) Delete(ctx context.Context, id int) (err error) {
 	q := `DELETE FROM meal_food WHERE meal_id = $1`
-	r.client.QueryRow(ctx, q, id)
+	rw, err := r.client.Query(ctx, q, id)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
 	q = `DELETE FROM meal_client WHERE meal_id = $1`
-	r.client.QueryRow(ctx, q, id)
+	rw, err = r.client.Query(ctx, q, id)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
 	q = `DELETE FROM meal WHERE id = $1`
-	r.client.QueryRow(ctx, q, id)
+	rw, err = r.client.Query(ctx, q, id)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
 	return
 }
 
@@ -135,7 +147,12 @@ func (r *repository) Like(ctx context.Context, mealId int, userId int) (liked bo
 	SELECT EXISTS (SELECT 1 FROM public.meal_client WHERE meal_id = $1 AND user_id = $2)
 	`
 	var exists bool
-	rw := r.client.QueryRow(ctx, q, mealId, userId)
+	rw, err := r.client.Query(ctx, q, mealId, userId)
+	if err != nil {
+		return false, err
+	}
+	defer rw.Close()
+	rw.Next()
 	err = rw.Scan(&exists)
 	if err != nil {
 		return false, err
@@ -144,31 +161,52 @@ func (r *repository) Like(ctx context.Context, mealId int, userId int) (liked bo
 		q = `
 		DELETE FROM public.meal_client WHERE meal_id = $1 AND user_id = $2
 		`
-		r.client.QueryRow(ctx, q, mealId, userId)
+		rw, err = r.client.Query(ctx, q, mealId, userId)
+		if err != nil {
+			return false, err
+		}
+		defer rw.Close()
 		liked = false
 		q = `
 		UPDATE public.meal SET likes = likes - 1 WHERE id = $1
 		`
-		r.client.QueryRow(ctx, q, mealId)
+		rw, err = r.client.Query(ctx, q, mealId)
+		if err != nil {
+			return false, err
+		}
+		defer rw.Close()
 	} else {
 		q = `
 		INSERT INTO meal_client (meal_id, user_id) VALUES ($1, $2)
 		`
-		r.client.QueryRow(ctx, q, mealId, userId)
+		rw, err = r.client.Query(ctx, q, mealId, userId)
+		if err != nil {
+			return false, err
+		}
+		defer rw.Close()
 		liked = true
 		q = `
 		UPDATE public.meal SET likes = likes + 1 WHERE id = $1
 		`
-		r.client.QueryRow(ctx, q, mealId)
+		rw, err = r.client.Query(ctx, q, mealId)
+		if err != nil {
+			return false, err
+		}
+		defer rw.Close()
 	}
 	return
 }
 
 func (r *repository) AddProduct(ctx context.Context, id int, product *food.Food, quantity int) error {
-	q := `SELECT EXISTS (SELECT 1 FROM food WHERE id = $1)`
+	q := `SELECT EXISTS (SELECT * FROM food WHERE id = $1)`
 	var exists bool
-	rw := r.client.QueryRow(ctx, q, id)
-	err := rw.Scan(&exists)
+	rw, err := r.client.Query(ctx, q, product.Id)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
+	rw.Next()
+	err = rw.Scan(&exists)
 	if err != nil {
 		r.log.Error("Error checking if there is such food")
 		return err
@@ -178,7 +216,12 @@ func (r *repository) AddProduct(ctx context.Context, id int, product *food.Food,
 		return err
 	}
 	q = `SELECT EXISTS (SELECT 1 FROM public.meal_client WHERE meal_id = $1 AND user_id = $2)`
-	rw = r.client.QueryRow(ctx, q, id, product.Id)
+	rw, err = r.client.Query(ctx, q, id, product.Id)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
+	rw.Next()
 	err = rw.Scan(&exists)
 	if err != nil {
 		r.log.Error("Error checking if product already is in meal")
@@ -190,24 +233,40 @@ func (r *repository) AddProduct(ctx context.Context, id int, product *food.Food,
                 total_calories = total_calories - $4,
                 total_fats = total_fats - $5
 			WHERE id = $1`
-		r.client.QueryRow(ctx, q, id,
+		rw, err = r.client.Query(ctx, q, id,
 			product.Calories*quantity, product.Carbohydrates*quantity,
 			product.Proteins*quantity, product.Fats*quantity,
 		)
+		if err != nil {
+			return err
+		}
+		defer rw.Close()
 		q = `DELETE FROM meal_client WHERE meal_id = $1 AND user_id = $2`
-		r.client.QueryRow(ctx, q, id, id, product.Id)
+		rw, err = r.client.Query(ctx, q, id, id, product.Id)
+		if err != nil {
+			return err
+		}
+		defer rw.Close()
 	} else {
 		q = `UPDATE meal SET total_calories = total_calories + $2,
                 total_carbohydrates = total_carbohydrates + $3, 
                 total_proteins = total_proteins + $4,
                 total_fats = total_fats + $5
 		  WHERE id = $1`
-		r.client.QueryRow(ctx, q, id,
+		rw, err = r.client.Query(ctx, q, id,
 			product.Calories*quantity, product.Carbohydrates*quantity,
 			product.Proteins*quantity, product.Fats*quantity,
 		)
+		if err != nil {
+			return err
+		}
+		defer rw.Close()
 		q = `INSERT INTO meal_food (meal_id, food_id, quantity) VALUES ($1, $2, $3)`
-		r.client.QueryRow(ctx, q, id, product.Id, quantity)
+		rw, err = r.client.Query(ctx, q, id, product.Id, quantity)
+		if err != nil {
+			return err
+		}
+		defer rw.Close()
 	}
 	return nil
 }

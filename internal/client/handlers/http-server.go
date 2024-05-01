@@ -5,6 +5,7 @@ import (
 	"CalorieGuide-db/internal/config"
 	"CalorieGuide-db/internal/food"
 	"CalorieGuide-db/internal/lib/logger/slg"
+	"CalorieGuide-db/internal/meal"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
@@ -167,7 +168,7 @@ func NewUpdate(log *slog.Logger, repository client.Repository) http.HandlerFunc 
 	}
 }
 
-func NewDelete(log *slog.Logger, repository client.Repository, fdRepo food.Repository) http.HandlerFunc {
+func NewDelete(log *slog.Logger, repository client.Repository, fdRepo food.Repository, mlRepo meal.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "client.handlers.NewDelete"
 		log = log.With(
@@ -205,7 +206,7 @@ func NewDelete(log *slog.Logger, repository client.Repository, fdRepo food.Repos
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		err = repository.Delete(r.Context(), clientId, fdRepo)
+		err = repository.Delete(r.Context(), clientId, fdRepo, mlRepo)
 		if err != nil {
 			log.Error("Failed to delete client", slg.Err(err))
 			w.WriteHeader(http.StatusBadRequest)

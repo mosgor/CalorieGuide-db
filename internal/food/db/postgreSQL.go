@@ -113,22 +113,38 @@ func (r *repository) Update(ctx context.Context, fd food.Food) error {
 		picture = $8
 	WHERE id = $1;
 	`
-	r.client.QueryRow(ctx, q,
+	rw, err := r.client.Query(ctx, q,
 		&fd.Id, &fd.Name,
 		&fd.Description, &fd.Calories,
 		&fd.Proteins, &fd.Carbohydrates,
 		&fd.Fats, &fd.Picture,
 	)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
 	return nil
 }
 
 func (r *repository) Delete(ctx context.Context, id int) (err error) {
 	q := `DELETE FROM public.food_client WHERE food_id = $1`
-	r.client.QueryRow(ctx, q, id)
+	rw, err := r.client.Query(ctx, q, id)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
 	q = `DELETE FROM public.meal_food WHERE food_id = $1`
-	r.client.QueryRow(ctx, q, id)
+	rw, err = r.client.Query(ctx, q, id)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
 	q = `DELETE FROM public.food WHERE id = $1;`
-	r.client.QueryRow(ctx, q, id)
+	rw, err = r.client.Query(ctx, q, id)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
 	return
 }
 
@@ -137,7 +153,12 @@ func (r *repository) Like(ctx context.Context, prodId int, userId int) (liked bo
 	SELECT EXISTS (SELECT 1 FROM public.food_client WHERE food_id = $1 AND user_id = $2)
 	`
 	var exists bool
-	rw := r.client.QueryRow(ctx, q, prodId, userId)
+	rw, err := r.client.Query(ctx, q, prodId, userId)
+	if err != nil {
+		return false, err
+	}
+	rw.Next()
+	defer rw.Close()
 	err = rw.Scan(&exists)
 	if err != nil {
 		return false, err
@@ -146,22 +167,38 @@ func (r *repository) Like(ctx context.Context, prodId int, userId int) (liked bo
 		q = `
 		DELETE FROM public.food_client WHERE food_id = $1 AND user_id = $2
 		`
-		r.client.QueryRow(ctx, q, prodId, userId)
+		rw, err = r.client.Query(ctx, q, prodId, userId)
+		if err != nil {
+			return false, err
+		}
+		defer rw.Close()
 		liked = false
 		q = `
 		UPDATE public.food SET likes = likes - 1 WHERE id = $1
 		`
-		r.client.QueryRow(ctx, q, prodId)
+		rw, err = r.client.Query(ctx, q, prodId)
+		if err != nil {
+			return false, err
+		}
+		defer rw.Close()
 	} else {
 		q = `
 		INSERT INTO food_client (food_id, user_id) VALUES ($1, $2)
 		`
-		r.client.QueryRow(ctx, q, prodId, userId)
+		rw, err = r.client.Query(ctx, q, prodId, userId)
+		if err != nil {
+			return false, err
+		}
+		defer rw.Close()
 		liked = true
 		q = `
 		UPDATE public.food SET likes = likes + 1 WHERE id = $1
 		`
-		r.client.QueryRow(ctx, q, prodId)
+		rw, err = r.client.Query(ctx, q, prodId)
+		if err != nil {
+			return false, err
+		}
+		defer rw.Close()
 	}
 	return
 }

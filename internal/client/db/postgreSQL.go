@@ -4,6 +4,7 @@ import (
 	"CalorieGuide-db/internal/client"
 	"CalorieGuide-db/internal/food"
 	"CalorieGuide-db/internal/lib/logger/slg"
+	"CalorieGuide-db/internal/meal"
 	"CalorieGuide-db/internal/storage/postgreSQL"
 	"context"
 	"errors"
@@ -18,19 +19,32 @@ type repository struct {
 
 func (r *repository) Create(ctx context.Context, client *client.Client) error {
 	q := `INSERT INTO goal DEFAULT VALUES`
-	r.client.QueryRow(ctx, q)
+	rw, err := r.client.Query(ctx, q)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
 	q = `INSERT INTO diet DEFAULT VALUES`
-	r.client.QueryRow(ctx, q)
+	rw, err = r.client.Query(ctx, q)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
 	q = `
 		INSERT INTO client (user_name, surname, email, password, picture)
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id`
-	if err := r.client.QueryRow(
-		ctx, q,
+	rw, err = r.client.Query(ctx, q,
 		client.Name, client.Surname,
 		client.Email, client.Password,
 		client.Picture,
-	).Scan(&client.Id); err != nil {
+	)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
+	rw.Next()
+	if err = rw.Scan(&client.Id); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			r.log.Error("Data base error", slg.PgErr(*pgErr))
@@ -131,11 +145,15 @@ func (r *repository) UpdateClient(ctx context.Context, cl client.Client) error {
 		email=$4, password=$5, picture=$6
 	WHERE id = $1;
 	`
-	r.client.QueryRow(ctx, q,
+	rw, err := r.client.Query(ctx, q,
 		&cl.Id, &cl.Name,
 		&cl.Surname, &cl.Email,
 		&cl.Password, &cl.Picture,
 	)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
 	return nil
 }
 
@@ -146,42 +164,83 @@ func (r *repository) UpdateGoal(ctx context.Context, goal client.Goal, goalId in
 		proteins_goal=$4, carbohydrates_goal=$5
 	WHERE id = $1;
 	`
-	r.client.QueryRow(ctx, q,
+	rw, err := r.client.Query(ctx, q,
 		goalId, &goal.CaloriesGoal,
 		&goal.FatsGoal, &goal.ProteinsGoal,
 		&goal.CarbohydratesGoal,
 	)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
 	return nil
 }
 
 func (r *repository) UpdateDiet(ctx context.Context, diet client.Diet, dietId int) error {
 	q := `UPDATE public.diet SET breakfast_id=$2 WHERE id = $1;`
 	if diet.BreakfastId != 0 {
-		r.client.QueryRow(ctx, q, dietId, &diet.BreakfastId)
+		rw, err := r.client.Query(ctx, q, dietId, &diet.BreakfastId)
+		if err != nil {
+			return err
+		}
+		defer rw.Close()
+	} else {
+		rw, err := r.client.Query(ctx, q, dietId, nil)
+		if err != nil {
+			return err
+		}
+		defer rw.Close()
 	}
 	q = `UPDATE public.diet SET lunch_id=$2 WHERE id = $1;`
 	if diet.LunchId != 0 {
-		r.client.QueryRow(ctx, q, dietId, &diet.LunchId)
+		rw, err := r.client.Query(ctx, q, dietId, &diet.LunchId)
+		if err != nil {
+			return err
+		}
+		defer rw.Close()
+	} else {
+		rw, err := r.client.Query(ctx, q, dietId, nil)
+		if err != nil {
+			return err
+		}
+		defer rw.Close()
 	}
 	q = `UPDATE public.diet SET dinner_id=$2 WHERE id = $1;`
 	if diet.DinnerId != 0 {
-		r.client.QueryRow(ctx, q, dietId, &diet.DinnerId)
+		rw, err := r.client.Query(ctx, q, dietId, &diet.DinnerId)
+		if err != nil {
+			return err
+		}
+		defer rw.Close()
+	} else {
+		rw, err := r.client.Query(ctx, q, dietId, nil)
+		if err != nil {
+			return err
+		}
+		defer rw.Close()
 	}
 	return nil
 }
 
-func (r *repository) Delete(ctx context.Context, id int, fdRepo food.Repository) error {
+func (r *repository) Delete(ctx context.Context, id int, fdRepo food.Repository, mealRepo meal.Repository) error {
 	q := `DELETE FROM public.food_client WHERE user_id=$1`
-	r.client.QueryRow(ctx, q, id)
+	rw, err := r.client.Query(ctx, q, id)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
 	q = `DELETE FROM public.meal_client WHERE user_id=$1`
-	r.client.QueryRow(ctx, q, id)
-	//q = `DELETE FROM public.food WHERE author_id=$1`
-	//r.client.QueryRow(ctx, q, id)
+	rw, err = r.client.Query(ctx, q, id)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
 	q = `SELECT id FROM public.food WHERE author_id=$1`
 	rows, err := r.client.Query(ctx, q, id)
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		foodId := 0
 		err = rows.Scan(&foodId)
@@ -193,12 +252,41 @@ func (r *repository) Delete(ctx context.Context, id int, fdRepo food.Repository)
 			return err
 		}
 	}
-	q = `DELETE FROM public.client WHERE id=$1`
-	r.client.QueryRow(ctx, q, id)
+	q = `SELECT id FROM public.meal WHERE author_id=$1`
+	rows, err = r.client.Query(ctx, q, id)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		mealId := 0
+		err = rows.Scan(&mealId)
+		if err != nil {
+			return err
+		}
+		err = mealRepo.Delete(ctx, mealId)
+		if err != nil {
+			return err
+		}
+	}
 	q = `DELETE FROM public.goal WHERE id=$1`
-	r.client.QueryRow(ctx, q, id)
+	rw, err = r.client.Query(ctx, q, id)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
 	q = `DELETE FROM public.diet WHERE id=$1`
-	r.client.QueryRow(ctx, q, id)
+	rw, err = r.client.Query(ctx, q, id)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
+	q = `DELETE FROM public.client WHERE id=$1`
+	rw, err = r.client.Query(ctx, q, id)
+	if err != nil {
+		return err
+	}
+	defer rw.Close()
 	return nil
 }
 
