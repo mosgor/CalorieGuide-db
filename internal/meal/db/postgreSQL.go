@@ -5,6 +5,7 @@ import (
 	"CalorieGuide-db/internal/meal"
 	"CalorieGuide-db/internal/storage/postgreSQL"
 	"context"
+	"errors"
 	"log/slog"
 )
 
@@ -14,10 +15,11 @@ type repository struct {
 }
 
 func (r *repository) Create(ctx context.Context, meal *meal.Meal) error {
-	q := `INSERT INTO meal (meal_name, author_id, description) VALUES ($1, $2, $3) RETURNING id`
+	q := `INSERT INTO meal (meal_name, author_id, description, picture) VALUES ($1, $2, $3, $4) RETURNING id`
 	if err := r.client.QueryRow(
 		ctx, q,
-		meal.Name, meal.AuthorId, meal.Description,
+		meal.Name, meal.AuthorId,
+		meal.Description, meal.Picture,
 	).Scan(&meal.Id); err != nil {
 		r.log.Error("Error creating meal")
 		return err
@@ -54,6 +56,7 @@ func (r *repository) FindAll(ctx context.Context, sortType string, twoDecade int
 			&ml.TotalCalories, &ml.TotalProteins,
 			&ml.TotalFats, &ml.TotalCarbs,
 			&ml.AuthorId, &ml.Description, &ml.Likes,
+			&ml.Picture,
 		)
 		if err != nil {
 			r.log.Error("Error scanning meals")
@@ -91,6 +94,7 @@ func (r *repository) FindOne(ctx context.Context, id int) (ml meal.Meal, err err
 		&ml.TotalCalories, &ml.TotalProteins,
 		&ml.TotalFats, &ml.TotalCarbs,
 		&ml.AuthorId, &ml.Description, &ml.Likes,
+		&ml.Picture,
 	); err != nil {
 		r.log.Error("Error getting meal")
 		return
@@ -116,8 +120,29 @@ func (r *repository) FindOne(ctx context.Context, id int) (ml meal.Meal, err err
 	return
 }
 
-func (r *repository) Update(ctx context.Context, ml meal.Meal) error {
-	panic("implement me")
+func (r *repository) Update(ctx context.Context, ml *meal.Meal) error {
+	q := `
+		UPDATE meal SET 
+			meal_name = $2, description = $3,
+			total_fats = 0, total_carbohydrates = 0,
+			total_proteins = 0, total_calories = 0,
+			picture = $4
+		WHERE id = $1
+	`
+	rw, err := r.client.Query(ctx, q, ml.Id, ml.Name, ml.Description, ml.Picture)
+	if err != nil {
+		r.log.Error("Error updating meal")
+		return err
+	}
+	defer rw.Close()
+	q = `DELETE FROM meal_food WHERE meal_id = $1`
+	rw, err = r.client.Query(ctx, q, ml.Id)
+	if err != nil {
+		r.log.Error("Error updating meal_food")
+		return err
+	}
+	defer rw.Close()
+	return nil
 }
 
 func (r *repository) Delete(ctx context.Context, id int) (err error) {
@@ -213,61 +238,28 @@ func (r *repository) AddProduct(ctx context.Context, id int, product *food.Food,
 	}
 	if !exists {
 		r.log.Error("There is no such food")
+		err = errors.New("there is no such food")
 		return err
 	}
-	q = `SELECT EXISTS (SELECT 1 FROM public.meal_client WHERE meal_id = $1 AND user_id = $2)`
-	rw, err = r.client.Query(ctx, q, id, product.Id)
+	q = `UPDATE meal SET total_calories = total_calories + $2,
+            total_carbohydrates = total_carbohydrates + $3, 
+            total_proteins = total_proteins + $4,
+            total_fats = total_fats + $5
+		  WHERE id = $1`
+	rw, err = r.client.Query(ctx, q, id,
+		product.Calories*quantity, product.Carbohydrates*quantity,
+		product.Proteins*quantity, product.Fats*quantity,
+	)
 	if err != nil {
 		return err
 	}
 	defer rw.Close()
-	rw.Next()
-	err = rw.Scan(&exists)
+	q = `INSERT INTO meal_food (meal_id, food_id, quantity) VALUES ($1, $2, $3)`
+	rw, err = r.client.Query(ctx, q, id, product.Id, quantity)
 	if err != nil {
-		r.log.Error("Error checking if product already is in meal")
 		return err
 	}
-	if exists {
-		q = `UPDATE meal SET total_calories = total_calories - $2,
-                total_carbohydrates = total_carbohydrates - $3,
-                total_calories = total_calories - $4,
-                total_fats = total_fats - $5
-			WHERE id = $1`
-		rw, err = r.client.Query(ctx, q, id,
-			product.Calories*quantity, product.Carbohydrates*quantity,
-			product.Proteins*quantity, product.Fats*quantity,
-		)
-		if err != nil {
-			return err
-		}
-		defer rw.Close()
-		q = `DELETE FROM meal_client WHERE meal_id = $1 AND user_id = $2`
-		rw, err = r.client.Query(ctx, q, id, id, product.Id)
-		if err != nil {
-			return err
-		}
-		defer rw.Close()
-	} else {
-		q = `UPDATE meal SET total_calories = total_calories + $2,
-                total_carbohydrates = total_carbohydrates + $3, 
-                total_proteins = total_proteins + $4,
-                total_fats = total_fats + $5
-		  WHERE id = $1`
-		rw, err = r.client.Query(ctx, q, id,
-			product.Calories*quantity, product.Carbohydrates*quantity,
-			product.Proteins*quantity, product.Fats*quantity,
-		)
-		if err != nil {
-			return err
-		}
-		defer rw.Close()
-		q = `INSERT INTO meal_food (meal_id, food_id, quantity) VALUES ($1, $2, $3)`
-		rw, err = r.client.Query(ctx, q, id, product.Id, quantity)
-		if err != nil {
-			return err
-		}
-		defer rw.Close()
-	}
+	defer rw.Close()
 	return nil
 }
 

@@ -11,6 +11,7 @@ type Meal struct {
 	Description   string    `json:"description,omitempty"`
 	Likes         int       `json:"likes,omitempty"`
 	Products      []Product `json:"products_id,omitempty"`
+	Picture       []int8    `json:"picture,omitempty"`
 }
 
 type Product struct {

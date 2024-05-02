@@ -183,7 +183,7 @@ func NewDelete(log *slog.Logger, repository meal.Repository) http.HandlerFunc {
 			log.Error("Failed to get food Id", slg.Err(err))
 			return
 		}
-		fd, err := repository.FindOne(r.Context(), mealId)
+		ml, err := repository.FindOne(r.Context(), mealId)
 		if err != nil {
 			log.Error("There is no such meal", slg.Err(err))
 			w.WriteHeader(http.StatusBadRequest)
@@ -191,7 +191,7 @@ func NewDelete(log *slog.Logger, repository meal.Repository) http.HandlerFunc {
 		}
 		_, claims, _ := jwtauth.FromContext(r.Context())
 		authorIdClaims := int(claims["id"].(float64))
-		if fd.AuthorId != authorIdClaims {
+		if ml.AuthorId != authorIdClaims {
 			log.Error("Error with authentication")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
@@ -204,6 +204,68 @@ func NewDelete(log *slog.Logger, repository meal.Repository) http.HandlerFunc {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		render.JSON(w, r, fd)
+		render.JSON(w, r, ml)
+	}
+}
+
+func NewUpdate(log *slog.Logger, repository meal.Repository, repositoryF food.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "meal.handlers.NewUpdate"
+		log = log.With(
+			slog.String("op", op),
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+		mealId, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			log.Error("Failed to get food Id", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		var req meal.Meal
+		err = render.DecodeJSON(r.Body, &req)
+		if err != nil {
+			log.Error("Failed to parse request body", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		ml, err := repository.FindOne(r.Context(), mealId)
+		if err != nil {
+			log.Error("There is no such meal", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		_, claims, _ := jwtauth.FromContext(r.Context())
+		authorIdClaims := int(claims["id"].(float64))
+		if ml.AuthorId != authorIdClaims {
+			log.Error("Error with authentication")
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		req.Id = mealId
+		err = repository.Update(r.Context(), &req)
+		if err != nil {
+			log.Error("Failed to update meal", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		for i := 0; i < len(req.Products); i++ {
+			var prod food.Food
+			prod, err = repositoryF.FindOne(r.Context(), req.Products[i].ProductId)
+			err = repository.AddProduct(r.Context(), req.Id, &prod, req.Products[i].Quantity)
+			if err != nil {
+				log.Error("Failed to add product in meal", slg.Err(err))
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+		}
+		req, err = repository.FindOne(r.Context(), mealId)
+		if err != nil {
+			log.Error("There is no such meal", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		render.JSON(w, r, req)
 	}
 }

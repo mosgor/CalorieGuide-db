@@ -327,7 +327,8 @@ Response example:
       "products_id": [{"product_id": "number", "quantity": "number"}, "..."],
       "author_id": "number",
       "description": "string,omitempty",
-      "likes": "number,omitempty"
+      "likes": "number,omitempty",
+      "picture": "int8[],omitempty"
     },
     "..."
   ]
@@ -349,7 +350,8 @@ Response example:
   "products_id": [{"product_id": "number", "quantity": "number"}, "..."],
   "author_id": "number",
   "description": "string,omitempty",
-  "likes": "number,omitempty"
+  "likes": "number,omitempty",
+  "picture": "int8[],omitempty"
 }
 ```
 
@@ -363,7 +365,8 @@ Request example:
   "meal_name": "string",
   "products_id": [{"product_id": "number", "quantity": "number"}, "..."],
   "author_id": "number",
-  "description": "string,omitempty"
+  "description": "string,omitempty",
+  "picture": "int8[],omitempty"
 }
 ```
 
@@ -380,7 +383,8 @@ Response example:
   "products_id": [{"product_id": "number", "quantity": "number"}, "..."],
   "author_id": "number",
   "description": "string,omitempty",
-  "likes": "number,omitempty"
+  "likes": "number,omitempty",
+  "picture": "int8[],omitempty"
 }
 ```
 
@@ -393,7 +397,8 @@ Request example:
 {
   "meal_name": "string",
   "products_id": [{"product_id": "number", "quantity": "number"}, "..."],
-  "description": "string,omitempty"
+  "description": "string,omitempty",
+  "picture": "int8[],omitempty"
 }
 ```
 
@@ -410,7 +415,8 @@ Response example:
   "products_id": [{"product_id": "number", "quantity": "number"}, "..."],
   "author_id": "number",
   "description": "string,omitempty",
-  "likes": "number,omitempty"
+  "likes": "number,omitempty",
+  "picture": "int8[],omitempty"
 }
 ```
 
@@ -452,6 +458,7 @@ Response example:
   "products_id": [{"product_id": "number", "quantity": "number"}, "..."],
   "author_id": "number",
   "description": "string,omitempty",
-  "likes": "number,omitempty"
+  "likes": "number,omitempty",
+  "picture": "int8[],omitempty"
 }
 ```

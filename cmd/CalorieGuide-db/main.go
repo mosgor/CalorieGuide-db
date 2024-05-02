@@ -68,6 +68,7 @@ func main() {
 		r.Post("/meal", meal.NewAdd(log, mealRepo, foodRepo))
 		r.Post("/meals/like", meal.NewLike(log, mealRepo))
 		r.Delete("/meals/{id}", meal.NewDelete(log, mealRepo))
+		r.Put("/meals/{id}", meal.NewUpdate(log, mealRepo, foodRepo))
 	})
 
 	// Client routes
