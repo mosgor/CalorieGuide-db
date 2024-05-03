@@ -7,7 +7,7 @@ import (
 
 type Repository interface {
 	Create(ctx context.Context, meal *Meal) error
-	FindAll(ctx context.Context, sortType string, twoDecade int) (u []Meal, err error)
+	FindAll(ctx context.Context, sortType string, twoDecade int, userId int) (u []WithLike, err error)
 	Like(ctx context.Context, mealId int, userId int) (bool, error)
 	FindOne(ctx context.Context, id int) (Meal, error)
 	Update(ctx context.Context, fd *Meal) error

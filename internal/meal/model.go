@@ -18,3 +18,8 @@ type Product struct {
 	ProductId int `json:"product_id"`
 	Quantity  int `json:"quantity"`
 }
+
+type WithLike struct {
+	Meal
+	Like bool `json:"isLiked"`
+}

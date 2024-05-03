@@ -50,7 +50,8 @@ Request example:
 ```json
 {
   "sort": "likesAsc/likesDesc/fromNewest/fromOldest,omitempty",
-  "two-decade": "number,omitempty"
+  "two-decade": "number,omitempty",
+  "user_id": "number,omitempty"
 }
 ```
 
@@ -69,7 +70,8 @@ Response example:
       "fats": "number",
       "author_id": "number",
       "likes": "number,omitempty",
-      "picture": "int8[],omitempty"
+      "picture": "int8[],omitempty",
+      "isLiked": "true/false"
     },
     "..."
   ]
@@ -330,7 +332,8 @@ Request example:
 ```json
 {
   "sort": "likesAsc/likesDesc/fromNewest/fromOldest,omitempty",
-  "two_decade": "number,omitempty"
+  "two_decade": "number,omitempty",
+  "user_id": "number,omitempty"
 }
 ```
 
@@ -350,7 +353,8 @@ Response example:
       "author_id": "number",
       "description": "string,omitempty",
       "likes": "number,omitempty",
-      "picture": "int8[],omitempty"
+      "picture": "int8[],omitempty",
+      "isLiked": "true/false"
     },
     "..."
   ]

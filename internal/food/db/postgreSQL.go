@@ -37,7 +37,7 @@ func (r *repository) Create(ctx context.Context, food *food.Food) error {
 	return nil
 }
 
-func (r *repository) FindAll(ctx context.Context, sortType string, twoDecade int) (u []food.Food, err error) {
+func (r *repository) FindAll(ctx context.Context, sortType string, twoDecade int, userId int) (u []food.WithLike, err error) {
 	q := `
 		SELECT 
 		    id, food_name, description, calories, proteins, carbohydrates, fats, author_id, likes, picture
@@ -60,9 +60,9 @@ func (r *repository) FindAll(ctx context.Context, sortType string, twoDecade int
 	if err != nil {
 		return nil, err
 	}
-	allFood := make([]food.Food, 0)
+	allFood := make([]food.WithLike, 0)
 	for rows.Next() {
-		var fd food.Food
+		var fd food.WithLike
 		err = rows.Scan(
 			&fd.Id, &fd.Name, &fd.Description,
 			&fd.Calories, &fd.Proteins,
@@ -71,6 +71,19 @@ func (r *repository) FindAll(ctx context.Context, sortType string, twoDecade int
 		)
 		if err != nil {
 			return nil, err
+		}
+		if userId != 0 {
+			q = `SELECT EXISTS (SELECT 1 FROM food_client WHERE user_id = $1 AND food_id  = $2)`
+			rw, err := r.client.Query(ctx, q, userId, fd.Id)
+			if err != nil {
+				return nil, err
+			}
+			defer rw.Close()
+			rw.Next()
+			err = rw.Scan(&fd.Like)
+			if err != nil {
+				return nil, err
+			}
 		}
 		allFood = append(allFood, fd)
 	}

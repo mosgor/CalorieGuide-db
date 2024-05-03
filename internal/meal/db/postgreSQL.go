@@ -27,7 +27,7 @@ func (r *repository) Create(ctx context.Context, meal *meal.Meal) error {
 	return nil
 }
 
-func (r *repository) FindAll(ctx context.Context, sortType string, twoDecade int) (u []meal.Meal, err error) {
+func (r *repository) FindAll(ctx context.Context, sortType string, twoDecade int, userId int) (u []meal.WithLike, err error) {
 	q := `SELECT * FROM meal `
 	switch sortType {
 	case "likesAsc":
@@ -47,10 +47,10 @@ func (r *repository) FindAll(ctx context.Context, sortType string, twoDecade int
 		r.log.Error("Error getting meals")
 		return nil, err
 	}
-	allMeals := make([]meal.Meal, 0)
-	q = `SELECT food_id, quantity FROM meal_food WHERE meal_id = $1`
+	allMeals := make([]meal.WithLike, 0)
 	for rows.Next() {
-		var ml meal.Meal
+		q = `SELECT food_id, quantity FROM meal_food WHERE meal_id = $1`
+		var ml meal.WithLike
 		err = rows.Scan(
 			&ml.Id, &ml.Name,
 			&ml.TotalCalories, &ml.TotalProteins,
@@ -62,10 +62,10 @@ func (r *repository) FindAll(ctx context.Context, sortType string, twoDecade int
 			r.log.Error("Error scanning meals")
 			return nil, err
 		}
-		rw, err := r.client.Query(ctx, q, ml.Id)
-		if err != nil {
+		rw, ferr := r.client.Query(ctx, q, ml.Id)
+		if ferr != nil {
 			r.log.Error("Error getting foods")
-			return nil, err
+			return nil, ferr
 		}
 		var foods []meal.Product
 		if rw != nil {
@@ -79,6 +79,13 @@ func (r *repository) FindAll(ctx context.Context, sortType string, twoDecade int
 			}
 		}
 		ml.Products = foods
+		if userId != 0 {
+			q = `SELECT EXISTS (SELECT 1 FROM meal_client WHERE user_id = $1 AND meal_id  = $2)`
+			err = r.client.QueryRow(ctx, q, userId, ml.Id).Scan(&ml.Like)
+			if err != nil {
+				return nil, err
+			}
+		}
 		allMeals = append(allMeals, ml)
 	}
 	if err = rows.Err(); err != nil {

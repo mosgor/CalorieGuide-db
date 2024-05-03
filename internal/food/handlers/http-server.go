@@ -13,13 +13,14 @@ import (
 )
 
 type FindAllRequest struct {
-	Sort      string `json:"sort"`
+	Sort      string `json:"sort,omitempty"`
 	TwoDecade int    `json:"two-decade,omitempty"`
+	UserID    int    `json:"user_id,omitempty"`
 }
 
 type FindAllResponse struct {
 	//response.Response
-	Products []food.Food `json:"products,omitempty"`
+	Products []food.WithLike `json:"products,omitempty"`
 }
 
 type AddResponse struct {
@@ -43,6 +44,7 @@ func NewFindAll(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 		var req FindAllRequest
 		var sortType = "fromNewest"
 		var twoDecade = 1
+		var userId = 0
 		if r.Body != http.NoBody {
 			err := render.DecodeJSON(r.Body, &req)
 			if err != nil {
@@ -55,8 +57,11 @@ func NewFindAll(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 			if req.TwoDecade != 0 {
 				twoDecade = req.TwoDecade
 			}
+			if req.UserID != 0 {
+				userId = req.UserID
+			}
 		}
-		foods, err := repository.FindAll(r.Context(), sortType, twoDecade)
+		foods, err := repository.FindAll(r.Context(), sortType, twoDecade, userId)
 		if err != nil {
 			log.Error("Failed to get all foods")
 			return

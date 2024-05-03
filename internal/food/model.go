@@ -12,3 +12,8 @@ type Food struct {
 	Likes         int    `json:"likes,omitempty"`
 	Picture       []int8 `json:"picture,omitempty"`
 }
+
+type WithLike struct {
+	Food
+	Like bool `json:"isLiked"`
+}
