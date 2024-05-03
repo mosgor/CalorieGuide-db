@@ -217,3 +217,67 @@ func NewDelete(log *slog.Logger, repository client.Repository, fdRepo food.Repos
 		render.JSON(w, r, clientFull{cl, diet, goal})
 	}
 }
+
+func NewFindMealLikes(log *slog.Logger, repository client.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "client.handlers.NewFindMealLikes"
+		log = log.With(
+			slog.String("op", op),
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+		clientId, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			log.Error("Failed to get client Id", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		_, claims, _ := jwtauth.FromContext(r.Context())
+		authorIdClaims := int(claims["id"].(float64))
+		if clientId != authorIdClaims {
+			log.Error("Error with authentication")
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		cl, err := repository.FindMealLikes(r.Context(), clientId)
+		if err != nil {
+			log.Error("Failed to find meal likes", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		render.JSON(w, r, struct {
+			Meals []int `json:"meals,omitempty"`
+		}{Meals: cl})
+	}
+}
+
+func NewFindFoodLikes(log *slog.Logger, repository client.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "client.handlers.NewFindFoodLikes"
+		log = log.With(
+			slog.String("op", op),
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+		clientId, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			log.Error("Failed to get client Id", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		_, claims, _ := jwtauth.FromContext(r.Context())
+		authorIdClaims := int(claims["id"].(float64))
+		if clientId != authorIdClaims {
+			log.Error("Error with authentication")
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		cl, err := repository.FindFoodLikes(r.Context(), clientId)
+		if err != nil {
+			log.Error("Failed to find food likes", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		render.JSON(w, r, struct {
+			Products []int `json:"products,omitempty"`
+		}{Products: cl})
+	}
+}

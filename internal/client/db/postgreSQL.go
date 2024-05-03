@@ -290,6 +290,42 @@ func (r *repository) Delete(ctx context.Context, id int, fdRepo food.Repository,
 	return nil
 }
 
+func (r *repository) FindMealLikes(ctx context.Context, id int) ([]int, error) {
+	q := `SELECT meal_id FROM public.meal_client WHERE user_id=$1`
+	rows, err := r.client.Query(ctx, q, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var mealsId []int
+	for rows.Next() {
+		mealsId = append(mealsId, 0)
+		err = rows.Scan(&mealsId[len(mealsId)-1])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return mealsId, nil
+}
+
+func (r *repository) FindFoodLikes(ctx context.Context, id int) ([]int, error) {
+	q := `SELECT food_id FROM public.food_client WHERE user_id=$1`
+	rows, err := r.client.Query(ctx, q, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var foodsId []int
+	for rows.Next() {
+		foodsId = append(foodsId, 0)
+		err = rows.Scan(&foodsId[len(foodsId)-1])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return foodsId, nil
+}
+
 func NewRepository(client postgreSQL.Client, log *slog.Logger) client.Repository {
 	return &repository{
 		client: client,

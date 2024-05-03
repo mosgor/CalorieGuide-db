@@ -299,6 +299,28 @@ Response example:
 }
 ```
 
+- Получение лайкнутых продуктов `GET /user/<user_id>/products`  
+**Требуется авторизация по токену**
+
+Response example:
+
+```json
+{
+  "products": ["number", "number", "..."]
+}
+```
+
+- Получение лайкнутых приёмов пищи `GET /user/<user_id>/meals`  
+  **Требуется авторизация по токену**
+
+Response example:
+
+```json
+{
+  "meals": ["number", "number", "..."]
+}
+```
+
 ## Приёмы пищи
 
 - Получение всех приёмов пищи `GET /meals`
