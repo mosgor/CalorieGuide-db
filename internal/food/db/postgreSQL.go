@@ -78,12 +78,12 @@ func (r *repository) FindAll(ctx context.Context, sortType string, twoDecade int
 			if err != nil {
 				return nil, err
 			}
-			defer rw.Close()
 			rw.Next()
 			err = rw.Scan(&fd.Like)
 			if err != nil {
 				return nil, err
 			}
+			rw.Close()
 		}
 		allFood = append(allFood, fd)
 	}
