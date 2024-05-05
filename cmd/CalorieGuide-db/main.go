@@ -78,11 +78,11 @@ func main() {
 	router.Post("/login", client.FindEmail(log, clientRepo))
 
 	// Product routes
-	router.Get("/products", food.NewFindAll(log, foodRepo))
+	router.Post("/products", food.NewFindAll(log, foodRepo))
 	router.Get("/products/{id}", food.NewFindOne(log, foodRepo))
 
 	// Meal routes
-	router.Get("/meals", meal.NewFindAll(log, mealRepo))
+	router.Post("/meals", meal.NewFindAll(log, mealRepo))
 	router.Get("/meals/{id}", meal.NewFindOne(log, mealRepo))
 
 	log.Info("starting server", slog.String("addr", cfg.Address))
