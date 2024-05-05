@@ -45,11 +45,11 @@ func (r *repository) FindAll(ctx context.Context, sortType string, twoDecade int
 	`
 	switch sortType {
 	case "likesAsc":
-		q += `ORDER BY likes ASC;`
+		q += `ORDER BY likes ASC`
 	case "likesDesc":
-		q += `ORDER BY likes DESC;`
+		q += `ORDER BY likes DESC`
 	case "fromOldest":
-		q += `ORDER BY id ASC;`
+		q += `ORDER BY id ASC`
 	case "fromNewest":
 		fallthrough
 	default:
