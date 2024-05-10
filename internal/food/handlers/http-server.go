@@ -30,8 +30,13 @@ type AddResponse struct {
 
 type LikeResponse struct {
 	UserId int    `json:"user_id"`
-	FoodId int    `json:"food_id"`
+	FoodId int    `json:"product_id"`
 	Action string `json:"action,omitempty"`
+}
+
+type SearchRequest struct {
+	Word   string `json:"word"`
+	UserId int    `json:"user,omitempty"`
 }
 
 func NewFindAll(log *slog.Logger, repository food.Repository) http.HandlerFunc {
@@ -252,5 +257,26 @@ func NewLike(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		render.JSON(w, r, req)
+	}
+}
+
+func NewSearch(log *slog.Logger, repository food.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "food.handlers.NewSearch"
+		log = log.With(
+			slog.String("op", op),
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+		var req SearchRequest
+		err := render.DecodeJSON(r.Body, &req)
+		if err != nil {
+			log.Error("Failed to parse request body", slg.Err(err))
+		}
+		foods, err := repository.Search(r.Context(), req.Word, req.UserId)
+		if err != nil {
+			log.Error("Failed to get foods")
+			return
+		}
+		render.JSON(w, r, FindAllResponse{Products: foods})
 	}
 }

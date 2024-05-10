@@ -80,6 +80,7 @@ func main() {
 	// Product routes
 	router.Post("/products", food.NewFindAll(log, foodRepo))
 	router.Get("/products/{id}", food.NewFindOne(log, foodRepo))
+	router.Post("/products/search", food.NewSearch(log, foodRepo))
 
 	// Meal routes
 	router.Post("/meals", meal.NewFindAll(log, mealRepo))

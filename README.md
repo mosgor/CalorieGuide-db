@@ -175,6 +175,40 @@ Response example:
 }
 ```
 
+- Поиск `POST /products/search`
+
+Request example:
+
+```json
+{
+    "word": "string",
+    "user": "number,omitempty" 
+}
+```
+
+Response example:
+
+```json
+{
+  "products": [
+    {
+      "id": "number",
+      "food_name": "string",
+      "description": "string,omitempty",
+      "calories": "number",
+      "proteins": "number",
+      "carbohydrates": "number",
+      "fats": "number",
+      "author_id": "number",
+      "likes": "number,omitempty",
+      "picture": "int8[],omitempty",
+      "isLiked": "true/false"
+    },
+    "..."
+  ]
+}
+```
+
 ## Пользователь
 
 - Создание пользователя `POST /user`

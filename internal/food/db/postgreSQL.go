@@ -216,6 +216,87 @@ func (r *repository) Like(ctx context.Context, prodId int, userId int) (liked bo
 	return
 }
 
+func (r *repository) Search(ctx context.Context, word string, userId int) (fd []food.WithLike, err error) {
+	allFood := make([]food.WithLike, 0)
+	q := `
+		SELECT id, food_name, description, calories, proteins, carbohydrates, fats, author_id, likes, picture
+		FROM public.food WHERE food_name ILIKE CONCAT('%',$1::text,'%') ORDER BY likes DESC;
+		`
+	rows, err := r.client.Query(ctx, q, word)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var fd food.WithLike
+		err = rows.Scan(
+			&fd.Id, &fd.Name, &fd.Description,
+			&fd.Calories, &fd.Proteins,
+			&fd.Carbohydrates, &fd.Fats,
+			&fd.AuthorId, &fd.Likes, &fd.Picture,
+		)
+		if err != nil {
+			return nil, err
+		}
+		if userId != 0 {
+			q = `SELECT EXISTS (SELECT 1 FROM food_client WHERE user_id = $1 AND food_id  = $2)`
+			rw, err := r.client.Query(ctx, q, userId, fd.Id)
+			if err != nil {
+				return nil, err
+			}
+			rw.Next()
+			err = rw.Scan(&fd.Like)
+			if err != nil {
+				return nil, err
+			}
+			rw.Close()
+		}
+		allFood = append(allFood, fd)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	rows.Close()
+	q = `
+		SELECT id, food_name, description, calories, proteins, carbohydrates, fats, author_id, likes, picture
+		FROM public.food WHERE description ILIKE CONCAT('%',$1::text,'%') ORDER BY likes DESC;
+		`
+	rows, err = r.client.Query(ctx, q, word)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var fd food.WithLike
+		err = rows.Scan(
+			&fd.Id, &fd.Name, &fd.Description,
+			&fd.Calories, &fd.Proteins,
+			&fd.Carbohydrates, &fd.Fats,
+			&fd.AuthorId, &fd.Likes, &fd.Picture,
+		)
+		if err != nil {
+			return nil, err
+		}
+		if userId != 0 {
+			q = `SELECT EXISTS (SELECT 1 FROM food_client WHERE user_id = $1 AND food_id  = $2)`
+			rw, err := r.client.Query(ctx, q, userId, fd.Id)
+			if err != nil {
+				return nil, err
+			}
+			rw.Next()
+			err = rw.Scan(&fd.Like)
+			if err != nil {
+				return nil, err
+			}
+			rw.Close()
+		}
+		allFood = append(allFood, fd)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	rows.Close()
+	return allFood, nil
+}
+
 func NewRepository(client postgreSQL.Client, log *slog.Logger) food.Repository {
 	return &repository{
 		client: client,
