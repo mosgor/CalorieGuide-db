@@ -290,40 +290,81 @@ func (r *repository) Delete(ctx context.Context, id int, fdRepo food.Repository,
 	return nil
 }
 
-func (r *repository) FindMealLikes(ctx context.Context, id int) ([]int, error) {
+func (r *repository) FindMealLikes(ctx context.Context, id int) (meals []meal.WithLike, err error) {
 	q := `SELECT meal_id FROM public.meal_client WHERE user_id=$1`
 	rows, err := r.client.Query(ctx, q, id)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var mealsId []int
 	for rows.Next() {
-		mealsId = append(mealsId, 0)
-		err = rows.Scan(&mealsId[len(mealsId)-1])
+		var mealId int
+		err = rows.Scan(&mealId)
 		if err != nil {
 			return nil, err
 		}
+		q = `SELECT * FROM public.meal WHERE id=$1`
+		var ml meal.WithLike
+		err = r.client.QueryRow(ctx, q, mealId).Scan(
+			&ml.Id, &ml.Name,
+			&ml.TotalCalories, &ml.TotalProteins,
+			&ml.TotalFats, &ml.TotalCarbs,
+			&ml.AuthorId, &ml.Description, &ml.Likes,
+			&ml.Picture,
+		)
+		ml.Like = true
+		q = `SELECT food_id, quantity FROM meal_food WHERE meal_id = $1`
+		rw, ferr := r.client.Query(ctx, q, ml.Id)
+		if ferr != nil {
+			r.log.Error("Error getting foods")
+			return nil, ferr
+		}
+		var foods []meal.Product
+		if rw != nil {
+			for rw.Next() {
+				var f meal.Product
+				if err = rw.Scan(&f.ProductId, &f.Quantity); err != nil {
+					r.log.Error("Error scanning foods")
+					return nil, err
+				}
+				foods = append(foods, f)
+			}
+		}
+		ml.Products = foods
+		meals = append(meals, ml)
 	}
-	return mealsId, nil
+	return
 }
 
-func (r *repository) FindFoodLikes(ctx context.Context, id int) ([]int, error) {
+func (r *repository) FindFoodLikes(ctx context.Context, id int) (foods []food.WithLike, err error) {
 	q := `SELECT food_id FROM public.food_client WHERE user_id=$1`
 	rows, err := r.client.Query(ctx, q, id)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var foodsId []int
 	for rows.Next() {
-		foodsId = append(foodsId, 0)
-		err = rows.Scan(&foodsId[len(foodsId)-1])
+		var foodId int
+		err = rows.Scan(&foodId)
 		if err != nil {
 			return nil, err
 		}
+		q = `SELECT * FROM public.food WHERE id=$1`
+		var fd food.WithLike
+		err = r.client.QueryRow(ctx, q, foodId).Scan(
+			&fd.Id, &fd.Name, &fd.Description,
+			&fd.Calories, &fd.Proteins,
+			&fd.Carbohydrates, &fd.Fats,
+			&fd.AuthorId, &fd.Likes, &fd.Picture,
+		)
+		if err != nil {
+			r.log.Error("Failed to scan food")
+			return nil, err
+		}
+		fd.Like = true
+		foods = append(foods, fd)
 	}
-	return foodsId, nil
+	return
 }
 
 func NewRepository(client postgreSQL.Client, log *slog.Logger) client.Repository {

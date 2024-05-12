@@ -16,6 +16,6 @@ type Repository interface {
 	FindDietById(ctx context.Context, id int) (Diet, error)
 	UpdateDiet(ctx context.Context, diet Diet, id int) error
 	UpdateGoal(ctx context.Context, goal Goal, id int) error
-	FindMealLikes(ctx context.Context, id int) ([]int, error)
-	FindFoodLikes(ctx context.Context, id int) ([]int, error)
+	FindMealLikes(ctx context.Context, id int) ([]meal.WithLike, error)
+	FindFoodLikes(ctx context.Context, id int) ([]food.WithLike, error)
 }

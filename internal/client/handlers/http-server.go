@@ -4,8 +4,10 @@ import (
 	"CalorieGuide-db/internal/client"
 	"CalorieGuide-db/internal/config"
 	"CalorieGuide-db/internal/food"
+	food2 "CalorieGuide-db/internal/food/handlers"
 	"CalorieGuide-db/internal/lib/logger/slg"
 	"CalorieGuide-db/internal/meal"
+	meal2 "CalorieGuide-db/internal/meal/handlers"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
@@ -244,9 +246,7 @@ func NewFindMealLikes(log *slog.Logger, repository client.Repository) http.Handl
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		render.JSON(w, r, struct {
-			Meals []int `json:"meals,omitempty"`
-		}{Meals: cl})
+		render.JSON(w, r, meal2.FindAllResponse{Meals: cl})
 	}
 }
 
@@ -276,8 +276,6 @@ func NewFindFoodLikes(log *slog.Logger, repository client.Repository) http.Handl
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		render.JSON(w, r, struct {
-			Products []int `json:"products,omitempty"`
-		}{Products: cl})
+		render.JSON(w, r, food2.FindAllResponse{Products: cl})
 	}
 }

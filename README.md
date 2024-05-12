@@ -342,7 +342,22 @@ Response example:
 
 ```json
 {
-  "products": ["number", "number", "..."]
+  "products": [
+    {
+      "id": "number",
+      "food_name": "string",
+      "description": "string,omitempty",
+      "calories": "number",
+      "proteins": "number",
+      "carbohydrates": "number",
+      "fats": "number",
+      "author_id": "number",
+      "likes": "number,omitempty",
+      "picture": "int8[],omitempty",
+      "isLiked": "true"
+    },
+    "..."
+  ]
 }
 ```
 
@@ -353,7 +368,23 @@ Response example:
 
 ```json
 {
-  "meals": ["number", "number", "..."]
+  "meals": [
+    {
+      "id": "number",
+      "meal_name": "string",
+      "total_calories": "number",
+      "total_proteins": "number",
+      "total_fats": "number",
+      "total_carbohydrates": "number",
+      "products_id": [{"product_id": "number", "quantity": "number"}, "..."],
+      "author_id": "number",
+      "description": "string,omitempty",
+      "likes": "number,omitempty",
+      "picture": "int8[],omitempty",
+      "isLiked": "true"
+    },
+    "..."
+  ]
 }
 ```
 
