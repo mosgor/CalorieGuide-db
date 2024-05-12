@@ -522,3 +522,38 @@ Response example:
   "picture": "int8[],omitempty"
 }
 ```
+
+- Поиск `POST /meals/search`
+
+Request example:
+
+```json
+{
+    "word": "string",
+    "user": "number,omitempty" 
+}
+```
+
+Response example:
+
+```json
+{
+  "meals": [
+    {
+      "id": "number",
+      "meal_name": "string",
+      "total_calories": "number",
+      "total_proteins": "number",
+      "total_fats": "number",
+      "total_carbohydrates": "number",
+      "products_id": [{"product_id": "number", "quantity": "number"}, "..."],
+      "author_id": "number",
+      "description": "string,omitempty",
+      "likes": "number,omitempty",
+      "picture": "int8[],omitempty",
+      "isLiked": "true/false"
+    },
+    "..."
+  ]
+}
+```

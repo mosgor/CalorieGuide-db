@@ -6,6 +6,7 @@ import (
 	"CalorieGuide-db/internal/storage/postgreSQL"
 	"context"
 	"errors"
+	"github.com/jackc/pgx/v4"
 	"log/slog"
 )
 
@@ -268,6 +269,75 @@ func (r *repository) AddProduct(ctx context.Context, id int, product *food.Food,
 	}
 	defer rw.Close()
 	return nil
+}
+
+func (r *repository) Search(ctx context.Context, word string, userId int) (res []meal.WithLike, err error) {
+	includedIds := make(map[int]struct{})
+	q := `
+		SELECT * FROM meal WHERE meal_name ILIKE CONCAT('%',$1::text,'%') ORDER BY likes DESC;
+	`
+	rows, err := r.client.Query(ctx, q, word)
+	defer rows.Close()
+	if err != nil {
+		r.log.Error("Error searching meal by name")
+		return nil, err
+	}
+	q = `
+		SELECT * FROM meal WHERE description ILIKE CONCAT('%',$1::text,'%') ORDER BY likes DESC;
+	`
+	rows1, err := r.client.Query(ctx, q, word)
+	defer rows1.Close()
+	if err != nil {
+		r.log.Error("Error searching meal by description")
+		return nil, err
+	}
+	for _, rw := range []pgx.Rows{rows, rows1} {
+		for rw.Next() {
+			var ml meal.WithLike
+			err = rw.Scan(
+				&ml.Id, &ml.Name,
+				&ml.TotalCalories, &ml.TotalProteins,
+				&ml.TotalFats, &ml.TotalCarbs,
+				&ml.AuthorId, &ml.Description, &ml.Likes,
+				&ml.Picture,
+			)
+			if err != nil {
+				r.log.Error("Error scanning meals")
+				return nil, err
+			}
+			_, ok := includedIds[ml.Id]
+			if !ok {
+				q = `SELECT food_id, quantity FROM meal_food WHERE meal_id = $1`
+				rw, ferr := r.client.Query(ctx, q, ml.Id)
+				if ferr != nil {
+					r.log.Error("Error getting foods")
+					return nil, ferr
+				}
+				var foods []meal.Product
+				if rw != nil {
+					for rw.Next() {
+						var f meal.Product
+						if err = rw.Scan(&f.ProductId, &f.Quantity); err != nil {
+							r.log.Error("Error scanning foods")
+							return nil, err
+						}
+						foods = append(foods, f)
+					}
+				}
+				ml.Products = foods
+				if userId != 0 {
+					q = `SELECT EXISTS (SELECT 1 FROM meal_client WHERE user_id = $1 AND meal_id  = $2)`
+					err = r.client.QueryRow(ctx, q, userId, ml.Id).Scan(&ml.Like)
+					if err != nil {
+						return nil, err
+					}
+				}
+				res = append(res, ml)
+				includedIds[ml.Id] = struct{}{}
+			}
+		}
+	}
+	return
 }
 
 func NewRepository(client postgreSQL.Client, log *slog.Logger) meal.Repository {

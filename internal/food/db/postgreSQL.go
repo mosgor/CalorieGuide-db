@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v4"
 	"log/slog"
 )
 
@@ -217,84 +218,58 @@ func (r *repository) Like(ctx context.Context, prodId int, userId int) (liked bo
 }
 
 func (r *repository) Search(ctx context.Context, word string, userId int) (fd []food.WithLike, err error) {
-	allFood := make([]food.WithLike, 0)
+	includedIds := make(map[int]struct{})
 	q := `
-		SELECT id, food_name, description, calories, proteins, carbohydrates, fats, author_id, likes, picture
-		FROM public.food WHERE food_name ILIKE CONCAT('%',$1::text,'%') ORDER BY likes DESC;
-		`
+		SELECT * FROM public.food WHERE food_name ILIKE CONCAT('%',$1::text,'%') ORDER BY likes DESC;
+	`
 	rows, err := r.client.Query(ctx, q, word)
 	if err != nil {
+		r.log.Error("Error searching food by name")
 		return nil, err
 	}
-	for rows.Next() {
-		var fd food.WithLike
-		err = rows.Scan(
-			&fd.Id, &fd.Name, &fd.Description,
-			&fd.Calories, &fd.Proteins,
-			&fd.Carbohydrates, &fd.Fats,
-			&fd.AuthorId, &fd.Likes, &fd.Picture,
-		)
-		if err != nil {
-			return nil, err
-		}
-		if userId != 0 {
-			q = `SELECT EXISTS (SELECT 1 FROM food_client WHERE user_id = $1 AND food_id  = $2)`
-			rw, err := r.client.Query(ctx, q, userId, fd.Id)
-			if err != nil {
-				return nil, err
-			}
-			rw.Next()
-			err = rw.Scan(&fd.Like)
-			if err != nil {
-				return nil, err
-			}
-			rw.Close()
-		}
-		allFood = append(allFood, fd)
-	}
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-	rows.Close()
+	defer rows.Close()
 	q = `
-		SELECT id, food_name, description, calories, proteins, carbohydrates, fats, author_id, likes, picture
-		FROM public.food WHERE description ILIKE CONCAT('%',$1::text,'%') ORDER BY likes DESC;
-		`
-	rows, err = r.client.Query(ctx, q, word)
+		SELECT * FROM public.food WHERE description ILIKE CONCAT('%',$1::text,'%') ORDER BY likes DESC;
+	`
+	rows1, err := r.client.Query(ctx, q, word)
 	if err != nil {
+		r.log.Error("Error searching food by description")
 		return nil, err
 	}
-	for rows.Next() {
-		var fd food.WithLike
-		err = rows.Scan(
-			&fd.Id, &fd.Name, &fd.Description,
-			&fd.Calories, &fd.Proteins,
-			&fd.Carbohydrates, &fd.Fats,
-			&fd.AuthorId, &fd.Likes, &fd.Picture,
-		)
-		if err != nil {
-			return nil, err
-		}
-		if userId != 0 {
-			q = `SELECT EXISTS (SELECT 1 FROM food_client WHERE user_id = $1 AND food_id  = $2)`
-			rw, err := r.client.Query(ctx, q, userId, fd.Id)
+	defer rows1.Close()
+	for _, rw := range []pgx.Rows{rows, rows1} {
+		for rw.Next() {
+			var product food.WithLike
+			err = rw.Scan(
+				&product.Id, &product.Name, &product.Description,
+				&product.Calories, &product.Proteins,
+				&product.Carbohydrates, &product.Fats,
+				&product.AuthorId, &product.Likes, &product.Picture,
+			)
 			if err != nil {
 				return nil, err
 			}
-			rw.Next()
-			err = rw.Scan(&fd.Like)
-			if err != nil {
-				return nil, err
+			_, ok := includedIds[product.Id]
+			if !ok {
+				if userId != 0 {
+					q = `SELECT EXISTS (SELECT 1 FROM food_client WHERE user_id = $1 AND food_id  = $2)`
+					rw, err := r.client.Query(ctx, q, userId, product.Id)
+					if err != nil {
+						return nil, err
+					}
+					rw.Next()
+					err = rw.Scan(&product.Like)
+					if err != nil {
+						return nil, err
+					}
+					rw.Close()
+				}
+				fd = append(fd, product)
+				includedIds[product.Id] = struct{}{}
 			}
-			rw.Close()
 		}
-		allFood = append(allFood, fd)
 	}
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-	rows.Close()
-	return allFood, nil
+	return fd, nil
 }
 
 func NewRepository(client postgreSQL.Client, log *slog.Logger) food.Repository {

@@ -29,6 +29,11 @@ type LikeResponse struct {
 	Action string `json:"action,omitempty"`
 }
 
+type SearchRequest struct {
+	Word   string `json:"word"`
+	UserId int    `json:"user,omitempty"`
+}
+
 func NewFindAll(log *slog.Logger, repository meal.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "meal.handlers.NewFindAll"
@@ -272,5 +277,29 @@ func NewUpdate(log *slog.Logger, repository meal.Repository, repositoryF food.Re
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		render.JSON(w, r, req)
+	}
+}
+
+func NewSearch(log *slog.Logger, repository meal.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const op = "meal.handlers.NewSearch"
+		log = log.With(
+			slog.String("op", op),
+			slog.String("request_id", middleware.GetReqID(r.Context())),
+		)
+		var req SearchRequest
+		err := render.DecodeJSON(r.Body, &req)
+		if err != nil {
+			log.Error("Failed to parse request body", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		res, err := repository.Search(r.Context(), req.Word, req.UserId)
+		if err != nil {
+			log.Error("Failed to search meals", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		render.JSON(w, r, FindAllResponse{Meals: res})
 	}
 }

@@ -85,6 +85,7 @@ func main() {
 	// Meal routes
 	router.Post("/meals", meal.NewFindAll(log, mealRepo))
 	router.Get("/meals/{id}", meal.NewFindOne(log, mealRepo))
+	router.Post("/meals/search", meal.NewSearch(log, mealRepo))
 
 	log.Info("starting server", slog.String("addr", cfg.Address))
 	srv := &http.Server{

@@ -13,4 +13,5 @@ type Repository interface {
 	Update(ctx context.Context, fd *Meal) error
 	Delete(ctx context.Context, id int) error
 	AddProduct(ctx context.Context, id int, product *food.Food, quantity int) error
+	Search(ctx context.Context, q string, userId int) ([]WithLike, error)
 }

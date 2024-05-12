@@ -271,10 +271,13 @@ func NewSearch(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 		err := render.DecodeJSON(r.Body, &req)
 		if err != nil {
 			log.Error("Failed to parse request body", slg.Err(err))
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 		foods, err := repository.Search(r.Context(), req.Word, req.UserId)
 		if err != nil {
 			log.Error("Failed to get foods")
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		render.JSON(w, r, FindAllResponse{Products: foods})
