@@ -274,7 +274,9 @@ func (r *repository) AddProduct(ctx context.Context, id int, product *food.Food,
 func (r *repository) Search(ctx context.Context, word string, userId int) (res []meal.WithLike, err error) {
 	includedIds := make(map[int]struct{})
 	q := `
-		SELECT * FROM meal WHERE meal_name ILIKE CONCAT('%',$1::text,'%') ORDER BY likes DESC;
+		SELECT * FROM meal 
+		WHERE SIMILARITY(meal_name, CONCAT('%',$1::text,'%')) > 0.2
+		ORDER BY SIMILARITY(meal_name, CONCAT('%',$1::text,'%')), likes DESC;
 	`
 	rows, err := r.client.Query(ctx, q, word)
 	defer rows.Close()
@@ -283,7 +285,9 @@ func (r *repository) Search(ctx context.Context, word string, userId int) (res [
 		return nil, err
 	}
 	q = `
-		SELECT * FROM meal WHERE description ILIKE CONCAT('%',$1::text,'%') ORDER BY likes DESC;
+		SELECT * FROM meal 
+		WHERE SIMILARITY(description, CONCAT('%',$1::text,'%')) > 0.2
+		ORDER BY SIMILARITY(description, CONCAT('%',$1::text,'%')), likes DESC;
 	`
 	rows1, err := r.client.Query(ctx, q, word)
 	defer rows1.Close()

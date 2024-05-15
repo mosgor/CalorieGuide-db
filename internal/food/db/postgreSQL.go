@@ -220,7 +220,9 @@ func (r *repository) Like(ctx context.Context, prodId int, userId int) (liked bo
 func (r *repository) Search(ctx context.Context, word string, userId int) (fd []food.WithLike, err error) {
 	includedIds := make(map[int]struct{})
 	q := `
-		SELECT * FROM public.food WHERE food_name ILIKE CONCAT('%',$1::text,'%') ORDER BY likes DESC;
+		SELECT * FROM food 
+		WHERE SIMILARITY(food_name, CONCAT('%',$1::text,'%')) > 0.2
+		ORDER BY SIMILARITY(food_name, CONCAT('%',$1::text,'%')), likes DESC;
 	`
 	rows, err := r.client.Query(ctx, q, word)
 	if err != nil {
@@ -229,7 +231,9 @@ func (r *repository) Search(ctx context.Context, word string, userId int) (fd []
 	}
 	defer rows.Close()
 	q = `
-		SELECT * FROM public.food WHERE description ILIKE CONCAT('%',$1::text,'%') ORDER BY likes DESC;
+		SELECT * FROM food 
+		WHERE SIMILARITY(description, CONCAT('%',$1::text,'%')) > 0.2
+		ORDER BY SIMILARITY(description, CONCAT('%',$1::text,'%')), likes DESC;
 	`
 	rows1, err := r.client.Query(ctx, q, word)
 	if err != nil {
