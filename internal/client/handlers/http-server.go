@@ -35,6 +35,11 @@ type clientFull struct {
 	client.Goal
 }
 
+type RegistrationRequest struct {
+	client.Client
+	client.Goal
+}
+
 func NewAdd(log *slog.Logger, repository client.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "client.handlers.NewAdd"
@@ -42,28 +47,22 @@ func NewAdd(log *slog.Logger, repository client.Repository) http.HandlerFunc {
 			slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
-		var req client.Client
+		var req RegistrationRequest
 		err := render.DecodeJSON(r.Body, &req)
 		if err != nil {
 			log.Error("Failed to parse request body", slg.Err(err))
 			return
 		}
-		err = repository.Create(r.Context(), &req)
+		err = repository.Create(r.Context(), &req.Client)
 		if err != nil {
 			log.Error("Failed to create client", slg.Err(err))
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
+		err = repository.UpdateGoal(r.Context(), req.Goal, req.Client.Id)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		render.JSON(w, r, client.Client{
-			Id:       req.Id,
-			Name:     req.Name,
-			Surname:  req.Surname,
-			Email:    req.Email,
-			Password: req.Password,
-			Picture:  req.Picture,
-		})
+		render.JSON(w, r, req)
 	}
 }
 

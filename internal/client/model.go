@@ -17,7 +17,7 @@ type Diet struct {
 }
 
 type Goal struct {
-	Id                int `json:"diet_id,omitempty"`
+	Id                int `json:"goal_id,omitempty"`
 	CaloriesGoal      int `json:"calories_goal"`
 	FatsGoal          int `json:"fats_goal"`
 	ProteinsGoal      int `json:"proteins_goal"`

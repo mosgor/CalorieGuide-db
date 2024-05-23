@@ -221,7 +221,11 @@ Request example:
   "surname": "string",
   "email": "string",
   "password": "string",
-  "picture": "int8[],omitempty"
+  "picture": "int8[],omitempty",
+  "calories_goal": "number",
+  "fats_goal": "number",
+  "proteins_goal": "number",
+  "carbohydrates_goal": "number"
 }
 ```
 
@@ -234,7 +238,11 @@ Response example:
   "surname": "string",
   "email": "string",
   "password": "string",
-  "picture": "int8[],omitempty"
+  "picture": "int8[],omitempty",
+  "calories_goal": "number",
+  "fats_goal": "number",
+  "proteins_goal": "number",
+  "carbohydrates_goal": "number"
 }
 ```
 
