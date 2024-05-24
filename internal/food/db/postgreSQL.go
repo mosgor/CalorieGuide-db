@@ -56,10 +56,18 @@ func (r *repository) FindAll(ctx context.Context, sortType string, twoDecade int
 	default:
 		q += `ORDER BY id DESC`
 	}
-	q += ` OFFSET $1 LIMIT 20;`
-	rows, err := r.client.Query(ctx, q, (twoDecade-1)*20)
-	if err != nil {
-		return nil, err
+	var rows pgx.Rows
+	if twoDecade != -1 {
+		q += ` OFFSET $1 LIMIT 20;`
+		rows, err = r.client.Query(ctx, q, (twoDecade-1)*20)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		rows, err = r.client.Query(ctx, q)
+		if err != nil {
+			return nil, err
+		}
 	}
 	allFood := make([]food.WithLike, 0)
 	for rows.Next() {
