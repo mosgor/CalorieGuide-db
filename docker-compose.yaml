@@ -3,7 +3,7 @@ services:
     image: postgres:16
     container_name: payment_tests
     environment:
-      POSTGRES_USER: postgres
+      POSTGRES_USER: pgs
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
     ports:
