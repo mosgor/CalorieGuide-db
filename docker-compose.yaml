@@ -19,5 +19,9 @@ services:
       - "8088:8088"
     environment:
       jwt_key: ${jwt_key}
+      address: ${address}
+      password: ${password}
+      username: ${username}
+      db: ${db}
     depends_on:
       - payment_postgres_tests
