@@ -1,0 +1,23 @@
+services:
+  payment_postgres_tests:
+    image: postgres:16
+    container_name: payment_tests
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./_data/payment_data:/var/lib/postgresql/data
+      - ./sql_scripts/payment:/docker-entrypoint-initdb.d
+
+  calorie_guide:
+    container_name: calorie_guide
+    build: app/
+    ports: 
+      - "8088:8088"
+    environment:
+      jwt_key: ${jwt_key}
+    depends_on:
+      - payment_postgres_tests

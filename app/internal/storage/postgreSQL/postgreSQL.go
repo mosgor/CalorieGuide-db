@@ -4,10 +4,11 @@ import (
 	"CalorieGuide-db/internal/lib/repeatable"
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"time"
 )
 
 type Client interface {
@@ -18,7 +19,7 @@ type Client interface {
 }
 
 func New(ctx context.Context, maxAttempts int, timeout time.Duration) (pool *pgxpool.Pool, err error) {
-	dsn := "postgresql://postgres:postgres@localhost:5438/postgres"
+	dsn := "postgresql://postgres:postgres@payment_postgres_tests:5432/postgres"
 	const operation = "storage.postgreSQL.New"
 	err = repeatable.DoWithTries(func() error {
 		ctx, cancel := context.WithTimeout(ctx, timeout*time.Second)

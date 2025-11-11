@@ -11,13 +11,14 @@ import (
 	meal "CalorieGuide-db/internal/meal/handlers"
 	"CalorieGuide-db/internal/storage/postgreSQL"
 	"context"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/jwtauth/v5"
 	"log/slog"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/jwtauth/v5"
 )
 
 const (
@@ -38,6 +39,10 @@ func main() {
 		log.Error("failed to init storage", slg.Err(err))
 		os.Exit(1)
 	}
+	if err := storage.Ping(context.Background()); err != nil {
+		panic("Can't connect to postgres")
+	}
+	log.Info("Sucessfully connected to docker")
 
 	foodRepo := food2.NewRepository(storage, log)
 	clientRepo := client2.NewRepository(storage, log)

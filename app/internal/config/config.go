@@ -1,10 +1,8 @@
 package config
 
 import (
-	"CalorieGuide-db/internal/lib/logger/slg"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/ilyakaznacheev/cleanenv"
-	"io"
 	"log"
 	"log/slog"
 	"os"
@@ -16,22 +14,9 @@ var authToken *jwtauth.JWTAuth
 
 func GetToken(log *slog.Logger) *jwtauth.JWTAuth {
 	if authToken == nil {
-		file, fErr := os.Open("config/key.txt")
-		if fErr != nil {
-			log.Error("Failed to open key file", slg.Err(fErr))
-			return nil
-		}
-		key := make([]byte, 31)
-		for {
-			_, fErr = file.Read(key)
-			if fErr == io.EOF {
-				break
-			}
-		}
-		fErr = file.Close()
-		if fErr != nil {
-			log.Error("Failed to close file", slg.Err(fErr))
-			return nil
+		key := os.Getenv("jwt_key")
+		if key == "" {
+			panic("jwt_key is not set")
 		}
 		authToken = jwtauth.New("HS256", key, nil)
 	}
@@ -57,7 +42,7 @@ func MustLoad() *Config {
 	if runtime.GOOS == "windows" {
 		configPath = "./config/local.yaml"
 	} else {
-		configPath = "/home/mosgor/CalorieGuide-db/Source/config/local.yaml"
+		configPath = "./config/local.yaml"
 	}
 	if configPath == "" {
 		log.Fatal("CONFIG_PATH is not set")
