@@ -1,7 +1,7 @@
 services:
-  payment_postgres_tests:
+  calorieguide-db:
     image: postgres:16
-    container_name: payment_tests
+    container_name: calorieguide-db
     environment:
       POSTGRES_USER: pgs
       POSTGRES_PASSWORD: postgres
@@ -24,4 +24,4 @@ services:
       username: ${username}
       db: ${db}
     depends_on:
-      - payment_postgres_tests
+      - calorieguide-db
