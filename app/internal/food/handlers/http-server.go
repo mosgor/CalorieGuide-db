@@ -19,12 +19,10 @@ type FindAllRequest struct {
 }
 
 type FindAllResponse struct {
-	//response.Response
 	Products []food.WithLike `json:"products,omitempty"`
 }
 
 type AddResponse struct {
-	//response.Response
 	Product food.Food `json:"product"`
 }
 
@@ -39,6 +37,15 @@ type SearchRequest struct {
 	UserId int    `json:"user,omitempty"`
 }
 
+// @Summary Получить список продуктов
+// @Description Возвращает список продуктов с возможностью сортировки
+// @Tags products
+// @Accept json
+// @Produce json
+// @Param request body FindAllRequest false "Параметры сортировки"
+// @Success 200 {object} FindAllResponse
+// @Failure 400 {object} string "Ошибка при получении"
+// @Router /products [post]
 func NewFindAll(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "food.handlers.NewFindAll"
@@ -72,12 +79,21 @@ func NewFindAll(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 			return
 		}
 		render.JSON(w, r, FindAllResponse{
-			//Response: response.Ok(),
 			Products: foods,
 		})
 	}
 }
 
+// @Summary Добавить новый продукт
+// @Description Создает новый продукт
+// @Tags products
+// @Accept json
+// @Produce json
+// @Param request body food.Food true "Данные продукта"
+// @Success 201 {object} AddResponse
+// @Failure 400 {object} string "Ошибка при создании"
+// @Failure 401 {object} string "Нет доступа"
+// @Router /product [post]
 func NewAdd(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "food.handlers.NewAdd"
@@ -111,6 +127,14 @@ func NewAdd(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 	}
 }
 
+// @Summary Получить продукт по ID
+// @Description Возвращает продукт по его ID
+// @Tags products
+// @Produce json
+// @Param id path int true "ID продукта"
+// @Success 200 {object} food.Food
+// @Failure 400 {object} string "Продукт не найден"
+// @Router /products/{id} [get]
 func NewFindOne(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "food.handlers.NewFindOne"
@@ -135,6 +159,17 @@ func NewFindOne(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 	}
 }
 
+// @Summary Обновить продукт
+// @Description Обновляет продукт по ID
+// @Tags products
+// @Accept json
+// @Produce json
+// @Param id path int true "ID продукта"
+// @Param request body food.Food true "Обновленные данные продукта"
+// @Success 200 {object} food.Food
+// @Failure 400 {object} string "Ошибка при обновлении"
+// @Failure 401 {object} string "Нет доступа"
+// @Router /products/{id} [put]
 func NewUpdate(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "food.handlers.NewUpdate"
@@ -185,6 +220,15 @@ func NewUpdate(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 	}
 }
 
+// @Summary Удалить продукт
+// @Description Удаляет продукт по ID
+// @Tags products
+// @Produce json
+// @Param id path int true "ID продукта"
+// @Success 200 {object} food.Food
+// @Failure 400 {object} string "Ошибка при удалении"
+// @Failure 401 {object} string "Нет доступа"
+// @Router /products/{id} [delete]
 func NewDelete(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "food.handlers.NewDelete"
@@ -222,6 +266,16 @@ func NewDelete(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 	}
 }
 
+// @Summary Лайк продукта
+// @Description Ставит или убирает лайк продукту
+// @Tags products
+// @Accept json
+// @Produce json
+// @Param request body LikeResponse true "Данные лайка"
+// @Success 200 {object} LikeResponse
+// @Failure 400 {object} string "Ошибка при лайке"
+// @Failure 401 {object} string "Нет доступа"
+// @Router /products/like [post]
 func NewLike(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "food.handlers.NewLike"
@@ -260,6 +314,15 @@ func NewLike(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 	}
 }
 
+// @Summary Поиск продуктов
+// @Description Ищет продукты по ключевому слову
+// @Tags products
+// @Accept json
+// @Produce json
+// @Param request body SearchRequest true "Поисковый запрос"
+// @Success 200 {object} FindAllResponse
+// @Failure 400 {object} string "Ошибка при поиске"
+// @Router /products/search [post]
 func NewSearch(log *slog.Logger, repository food.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "food.handlers.NewSearch"

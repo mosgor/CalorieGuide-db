@@ -1,0 +1,886 @@
+basePath: /
+definitions:
+  CalorieGuide-db_internal_client.Client:
+    description: Данные пользователя
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      picture:
+        items:
+          type: integer
+        type: array
+      surname:
+        type: string
+      user_name:
+        type: string
+    type: object
+  CalorieGuide-db_internal_client.Diet:
+    description: Диета пользователя
+    properties:
+      breakfast_id:
+        type: integer
+      diet_id:
+        type: integer
+      dinner_id:
+        type: integer
+      lunch_id:
+        type: integer
+    type: object
+  CalorieGuide-db_internal_client.Goal:
+    description: Цель пользователя
+    properties:
+      calories_goal:
+        type: integer
+      carbohydrates_goal:
+        type: integer
+      fats_goal:
+        type: integer
+      goal_id:
+        type: integer
+      proteins_goal:
+        type: integer
+    type: object
+  CalorieGuide-db_internal_food.Food:
+    description: Продукт
+    properties:
+      author_id:
+        type: integer
+      calories:
+        type: integer
+      carbohydrates:
+        type: integer
+      description:
+        type: string
+      fats:
+        type: integer
+      food_name:
+        type: string
+      id:
+        type: integer
+      likes:
+        type: integer
+      picture:
+        items:
+          type: integer
+        type: array
+      proteins:
+        type: integer
+    type: object
+  CalorieGuide-db_internal_food.WithLike:
+    description: Продукт с лайком
+    properties:
+      author_id:
+        type: integer
+      calories:
+        type: integer
+      carbohydrates:
+        type: integer
+      description:
+        type: string
+      fats:
+        type: integer
+      food_name:
+        type: string
+      id:
+        type: integer
+      isLiked:
+        type: boolean
+      likes:
+        type: integer
+      picture:
+        items:
+          type: integer
+        type: array
+      proteins:
+        type: integer
+    type: object
+  CalorieGuide-db_internal_food_handlers.FindAllResponse:
+    properties:
+      products:
+        items:
+          $ref: '#/definitions/CalorieGuide-db_internal_food.WithLike'
+        type: array
+    type: object
+  CalorieGuide-db_internal_meal.Meal:
+    description: Приём пищи
+    properties:
+      author_id:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      likes:
+        type: integer
+      meal_name:
+        type: string
+      picture:
+        items:
+          type: integer
+        type: array
+      products_id:
+        items:
+          $ref: '#/definitions/CalorieGuide-db_internal_meal.Product'
+        type: array
+      total_calories:
+        type: integer
+      total_carbohydrates:
+        type: integer
+      total_fats:
+        type: integer
+      total_proteins:
+        type: integer
+    type: object
+  CalorieGuide-db_internal_meal.Product:
+    description: Продукт в приёме пищи
+    properties:
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+    type: object
+  CalorieGuide-db_internal_meal.WithLike:
+    description: Приём пищи с лайком
+    properties:
+      author_id:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      isLiked:
+        type: boolean
+      likes:
+        type: integer
+      meal_name:
+        type: string
+      picture:
+        items:
+          type: integer
+        type: array
+      products_id:
+        items:
+          $ref: '#/definitions/CalorieGuide-db_internal_meal.Product'
+        type: array
+      total_calories:
+        type: integer
+      total_carbohydrates:
+        type: integer
+      total_fats:
+        type: integer
+      total_proteins:
+        type: integer
+    type: object
+  CalorieGuide-db_internal_meal_handlers.FindAllResponse:
+    properties:
+      meals:
+        items:
+          $ref: '#/definitions/CalorieGuide-db_internal_meal.WithLike'
+        type: array
+    type: object
+  internal_client_handlers.FindMailRequest:
+    description: Запрос на вход в аккаунт
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  internal_client_handlers.FindMailResponse:
+    description: Ответ при входе в систему
+    properties:
+      bearer_token:
+        type: string
+      client:
+        $ref: '#/definitions/CalorieGuide-db_internal_client.Client'
+      diet:
+        $ref: '#/definitions/CalorieGuide-db_internal_client.Diet'
+      goal:
+        $ref: '#/definitions/CalorieGuide-db_internal_client.Goal'
+    type: object
+  internal_client_handlers.RegistrationRequest:
+    description: Запрос для регистрации пользователя
+    properties:
+      client:
+        $ref: '#/definitions/CalorieGuide-db_internal_client.Client'
+      goal:
+        $ref: '#/definitions/CalorieGuide-db_internal_client.Goal'
+    type: object
+  internal_client_handlers.clientFull:
+    properties:
+      breakfast_id:
+        type: integer
+      calories_goal:
+        type: integer
+      carbohydrates_goal:
+        type: integer
+      diet_id:
+        type: integer
+      dinner_id:
+        type: integer
+      email:
+        type: string
+      fats_goal:
+        type: integer
+      goal_id:
+        type: integer
+      id:
+        type: integer
+      lunch_id:
+        type: integer
+      password:
+        type: string
+      picture:
+        items:
+          type: integer
+        type: array
+      proteins_goal:
+        type: integer
+      surname:
+        type: string
+      user_name:
+        type: string
+    type: object
+  internal_food_handlers.AddResponse:
+    properties:
+      product:
+        $ref: '#/definitions/CalorieGuide-db_internal_food.Food'
+    type: object
+  internal_food_handlers.FindAllRequest:
+    properties:
+      sort:
+        type: string
+      two-decade:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  internal_food_handlers.FindAllResponse:
+    properties:
+      products:
+        items:
+          $ref: '#/definitions/CalorieGuide-db_internal_food.WithLike'
+        type: array
+    type: object
+  internal_food_handlers.LikeResponse:
+    properties:
+      action:
+        type: string
+      product_id:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  internal_food_handlers.SearchRequest:
+    properties:
+      user:
+        type: integer
+      word:
+        type: string
+    type: object
+  internal_meal_handlers.FindAllRequest:
+    properties:
+      sort:
+        type: string
+      two-decade:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  internal_meal_handlers.FindAllResponse:
+    properties:
+      meals:
+        items:
+          $ref: '#/definitions/CalorieGuide-db_internal_meal.WithLike'
+        type: array
+    type: object
+  internal_meal_handlers.LikeResponse:
+    properties:
+      action:
+        type: string
+      meal_id:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  internal_meal_handlers.SearchRequest:
+    properties:
+      user:
+        type: integer
+      word:
+        type: string
+    type: object
+host: localhost:8090
+info:
+  contact: {}
+  description: API для работы с продуктами, пользователями и приёмами пищи
+  title: CalorieGuide API
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Проверяет email и пароль, возвращает токен
+      parameters:
+      - description: Email и пароль
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_client_handlers.FindMailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_client_handlers.FindMailResponse'
+        "400":
+          description: Неверный email или пароль
+          schema:
+            type: string
+      summary: Вход пользователя
+      tags:
+      - clients
+  /meal:
+    post:
+      consumes:
+      - application/json
+      description: Создает новый приём пищи
+      parameters:
+      - description: Данные приёма пищи
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/CalorieGuide-db_internal_meal.Meal'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/CalorieGuide-db_internal_meal.Meal'
+        "400":
+          description: Ошибка при создании
+          schema:
+            type: string
+        "401":
+          description: Нет доступа
+          schema:
+            type: string
+      summary: Добавить новый приём пищи
+      tags:
+      - meals
+  /meals:
+    post:
+      consumes:
+      - application/json
+      description: Возвращает список приёмов пищи с возможностью сортировки
+      parameters:
+      - description: Параметры сортировки
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/internal_meal_handlers.FindAllRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_meal_handlers.FindAllResponse'
+        "400":
+          description: Ошибка при получении
+          schema:
+            type: string
+      summary: Получить список приёмов пищи
+      tags:
+      - meals
+  /meals/{id}:
+    delete:
+      description: Удаляет приём пищи по ID
+      parameters:
+      - description: ID приёма пищи
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CalorieGuide-db_internal_meal.Meal'
+        "400":
+          description: Ошибка при удалении
+          schema:
+            type: string
+        "401":
+          description: Нет доступа
+          schema:
+            type: string
+      summary: Удалить приём пищи
+      tags:
+      - meals
+    get:
+      description: Возвращает приём пищи по его ID
+      parameters:
+      - description: ID приёма пищи
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CalorieGuide-db_internal_meal.Meal'
+        "400":
+          description: Приём пищи не найден
+          schema:
+            type: string
+      summary: Получить приём пищи по ID
+      tags:
+      - meals
+    put:
+      consumes:
+      - application/json
+      description: Обновляет приём пищи по ID
+      parameters:
+      - description: ID приёма пищи
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Обновленные данные приёма пищи
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/CalorieGuide-db_internal_meal.Meal'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CalorieGuide-db_internal_meal.Meal'
+        "400":
+          description: Ошибка при обновлении
+          schema:
+            type: string
+        "401":
+          description: Нет доступа
+          schema:
+            type: string
+      summary: Обновить приём пищи
+      tags:
+      - meals
+  /meals/like:
+    post:
+      consumes:
+      - application/json
+      description: Ставит или убирает лайк приёму пищи
+      parameters:
+      - description: Данные лайка
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_meal_handlers.LikeResponse'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_meal_handlers.LikeResponse'
+        "400":
+          description: Ошибка при лайке
+          schema:
+            type: string
+        "401":
+          description: Нет доступа
+          schema:
+            type: string
+      summary: Лайк приёма пищи
+      tags:
+      - meals
+  /meals/search:
+    post:
+      consumes:
+      - application/json
+      description: Ищет приёмы пищи по ключевому слову
+      parameters:
+      - description: Поисковый запрос
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_meal_handlers.SearchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_meal_handlers.FindAllResponse'
+        "400":
+          description: Ошибка при поиске
+          schema:
+            type: string
+      summary: Поиск приёмов пищи
+      tags:
+      - meals
+  /product:
+    post:
+      consumes:
+      - application/json
+      description: Создает новый продукт
+      parameters:
+      - description: Данные продукта
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/CalorieGuide-db_internal_food.Food'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_food_handlers.AddResponse'
+        "400":
+          description: Ошибка при создании
+          schema:
+            type: string
+        "401":
+          description: Нет доступа
+          schema:
+            type: string
+      summary: Добавить новый продукт
+      tags:
+      - products
+  /products:
+    post:
+      consumes:
+      - application/json
+      description: Возвращает список продуктов с возможностью сортировки
+      parameters:
+      - description: Параметры сортировки
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/internal_food_handlers.FindAllRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_food_handlers.FindAllResponse'
+        "400":
+          description: Ошибка при получении
+          schema:
+            type: string
+      summary: Получить список продуктов
+      tags:
+      - products
+  /products/{id}:
+    delete:
+      description: Удаляет продукт по ID
+      parameters:
+      - description: ID продукта
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CalorieGuide-db_internal_food.Food'
+        "400":
+          description: Ошибка при удалении
+          schema:
+            type: string
+        "401":
+          description: Нет доступа
+          schema:
+            type: string
+      summary: Удалить продукт
+      tags:
+      - products
+    get:
+      description: Возвращает продукт по его ID
+      parameters:
+      - description: ID продукта
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CalorieGuide-db_internal_food.Food'
+        "400":
+          description: Продукт не найден
+          schema:
+            type: string
+      summary: Получить продукт по ID
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      description: Обновляет продукт по ID
+      parameters:
+      - description: ID продукта
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Обновленные данные продукта
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/CalorieGuide-db_internal_food.Food'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CalorieGuide-db_internal_food.Food'
+        "400":
+          description: Ошибка при обновлении
+          schema:
+            type: string
+        "401":
+          description: Нет доступа
+          schema:
+            type: string
+      summary: Обновить продукт
+      tags:
+      - products
+  /products/like:
+    post:
+      consumes:
+      - application/json
+      description: Ставит или убирает лайк продукту
+      parameters:
+      - description: Данные лайка
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_food_handlers.LikeResponse'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_food_handlers.LikeResponse'
+        "400":
+          description: Ошибка при лайке
+          schema:
+            type: string
+        "401":
+          description: Нет доступа
+          schema:
+            type: string
+      summary: Лайк продукта
+      tags:
+      - products
+  /products/search:
+    post:
+      consumes:
+      - application/json
+      description: Ищет продукты по ключевому слову
+      parameters:
+      - description: Поисковый запрос
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_food_handlers.SearchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_food_handlers.FindAllResponse'
+        "400":
+          description: Ошибка при поиске
+          schema:
+            type: string
+      summary: Поиск продуктов
+      tags:
+      - products
+  /user:
+    post:
+      consumes:
+      - application/json
+      description: Создает нового пользователя
+      parameters:
+      - description: Данные пользователя
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_client_handlers.RegistrationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/CalorieGuide-db_internal_client.Client'
+        "400":
+          description: Ошибка при создании пользователя
+          schema:
+            type: string
+      summary: Регистрация нового пользователя
+      tags:
+      - clients
+  /user/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет пользователя по ID
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_client_handlers.clientFull'
+        "400":
+          description: Ошибка при удалении
+          schema:
+            type: string
+        "401":
+          description: Нет доступа
+          schema:
+            type: string
+      summary: Удаление пользователя
+      tags:
+      - clients
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные пользователя по ID
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные пользователя
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_client_handlers.clientFull'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_client_handlers.clientFull'
+        "400":
+          description: Ошибка при обновлении
+          schema:
+            type: string
+        "401":
+          description: Нет доступа
+          schema:
+            type: string
+      summary: Обновление данных пользователя
+      tags:
+      - clients
+  /user/{id}/meals:
+    get:
+      description: Возвращает список понравившихся приёмов пищи пользователя
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CalorieGuide-db_internal_meal_handlers.FindAllResponse'
+        "400":
+          description: Ошибка при получении
+          schema:
+            type: string
+        "401":
+          description: Нет доступа
+          schema:
+            type: string
+      summary: Получить понравившиеся приёмы пищи
+      tags:
+      - clients
+  /user/{id}/products:
+    get:
+      description: Возвращает список понравившихся продуктов пользователя
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CalorieGuide-db_internal_food_handlers.FindAllResponse'
+        "400":
+          description: Ошибка при получении
+          schema:
+            type: string
+        "401":
+          description: Нет доступа
+          schema:
+            type: string
+      summary: Получить понравившиеся продукты
+      tags:
+      - clients
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

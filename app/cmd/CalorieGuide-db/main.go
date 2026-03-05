@@ -16,9 +16,12 @@ import (
 	"os"
 	"time"
 
+	_ "CalorieGuide-db/docs"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 const (
@@ -27,6 +30,14 @@ const (
 	envProd  = "prod"
 )
 
+// @title CalorieGuide API
+// @version 1.0
+// @description API для работы с продуктами, пользователями и приёмами пищи
+// @host localhost:8090
+// @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	cfg := config.MustLoad()
 
@@ -42,7 +53,7 @@ func main() {
 	if err := storage.Ping(context.Background()); err != nil {
 		panic("Can't connect to postgres")
 	}
-	log.Info("Sucessfully connected to docker")
+	log.Info("Successfully connected to docker")
 
 	foodRepo := food2.NewRepository(storage, log)
 	clientRepo := client2.NewRepository(storage, log)
@@ -54,6 +65,39 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 	router.Use(middleware.Timeout(5 * time.Second))
+
+	// Swagger UI
+	router.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8090/swagger/doc.json"), // указываем путь к swagger.json
+	))
+
+	router.Get("/redoc", func(w http.ResponseWriter, r *http.Request) {
+		// Загружаем HTML из ReDoc
+		html := `
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ReDoc</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <redoc spec-url='/swagger/doc.json'></redoc>
+    <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"> </script>
+  </body>
+</html>
+`
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(html))
+	})
 
 	router.Group(func(r chi.Router) {
 		r.Use(jwtauth.Verifier(config.GetToken(log)))

@@ -1,5 +1,6 @@
 package meal
 
+// @Description Приём пищи
 type Meal struct {
 	Id            int       `json:"id"`
 	Name          string    `json:"meal_name"`
@@ -14,11 +15,13 @@ type Meal struct {
 	Picture       []int8    `json:"picture,omitempty"`
 }
 
+// @Description Продукт в приёме пищи
 type Product struct {
 	ProductId int `json:"product_id"`
 	Quantity  int `json:"quantity"`
 }
 
+// @Description Приём пищи с лайком
 type WithLike struct {
 	Meal
 	Like bool `json:"isLiked"`

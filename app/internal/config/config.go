@@ -1,13 +1,15 @@
 package config
 
 import (
-	"github.com/go-chi/jwtauth/v5"
-	"github.com/ilyakaznacheev/cleanenv"
 	"log"
 	"log/slog"
 	"os"
 	"runtime"
 	"time"
+
+	"github.com/go-chi/jwtauth/v5"
+	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/joho/godotenv"
 )
 
 var authToken *jwtauth.JWTAuth
@@ -38,6 +40,10 @@ type HTTPServer struct {
 }
 
 func MustLoad() *Config {
+	err := godotenv.Load("../.env")
+	if err != nil {
+		panic(err)
+	}
 	var configPath string
 	if runtime.GOOS == "windows" {
 		configPath = "./config/local.yaml"

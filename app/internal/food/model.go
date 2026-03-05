@@ -1,5 +1,6 @@
 package food
 
+// @Description Продукт
 type Food struct {
 	Id            int    `json:"id,omitempty"`
 	Name          string `json:"food_name"`
@@ -13,6 +14,7 @@ type Food struct {
 	Picture       []int8 `json:"picture,omitempty"`
 }
 
+// @Description Продукт с лайком
 type WithLike struct {
 	Food
 	Like bool `json:"isLiked"`

@@ -8,25 +8,34 @@ import (
 	"CalorieGuide-db/internal/lib/logger/slg"
 	"CalorieGuide-db/internal/meal"
 	meal2 "CalorieGuide-db/internal/meal/handlers"
+	"log/slog"
+	"net/http"
+	"strconv"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-chi/render"
-	"log/slog"
-	"net/http"
-	"strconv"
 )
 
+// @Description Запрос для регистрации пользователя
+type RegistrationRequest struct {
+	client.Client `json:"client"`
+	client.Goal   `json:"goal"`
+}
+
+// @Description Запрос на вход в аккаунт
 type FindMailRequest struct {
 	Mail     string `json:"email"`
 	Password string `json:"password"`
 }
 
+// @Description Ответ при входе в систему
 type FindMailResponse struct {
-	client.Client
-	client.Diet
-	client.Goal
-	BearerToken string
+	client.Client `json:"client"`
+	client.Diet   `json:"diet"`
+	client.Goal   `json:"goal"`
+	BearerToken   string `json:"bearer_token"`
 }
 
 type clientFull struct {
@@ -35,11 +44,15 @@ type clientFull struct {
 	client.Goal
 }
 
-type RegistrationRequest struct {
-	client.Client
-	client.Goal
-}
-
+// @Summary Регистрация нового пользователя
+// @Description Создает нового пользователя
+// @Tags clients
+// @Accept json
+// @Produce json
+// @Param request body RegistrationRequest true "Данные пользователя"
+// @Success 201 {object} client.Client
+// @Failure 400 {object} string "Ошибка при создании пользователя"
+// @Router /user [post]
 func NewAdd(log *slog.Logger, repository client.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "client.handlers.NewAdd"
@@ -66,6 +79,15 @@ func NewAdd(log *slog.Logger, repository client.Repository) http.HandlerFunc {
 	}
 }
 
+// @Summary Вход пользователя
+// @Description Проверяет email и пароль, возвращает токен
+// @Tags clients
+// @Accept json
+// @Produce json
+// @Param request body FindMailRequest true "Email и пароль"
+// @Success 200 {object} FindMailResponse
+// @Failure 400 {object} string "Неверный email или пароль"
+// @Router /login [post]
 func FindEmail(log *slog.Logger, repository client.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "client.handlers.FindEmail"
@@ -116,6 +138,17 @@ func FindEmail(log *slog.Logger, repository client.Repository) http.HandlerFunc 
 	}
 }
 
+// @Summary Обновление данных пользователя
+// @Description Обновляет данные пользователя по ID
+// @Tags clients
+// @Accept json
+// @Produce json
+// @Param id path int true "ID пользователя"
+// @Param request body clientFull true "Данные пользователя"
+// @Success 200 {object} clientFull
+// @Failure 400 {object} string "Ошибка при обновлении"
+// @Failure 401 {object} string "Нет доступа"
+// @Router /user/{id} [put]
 func NewUpdate(log *slog.Logger, repository client.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "client.handlers.NewUpdate"
@@ -169,6 +202,16 @@ func NewUpdate(log *slog.Logger, repository client.Repository) http.HandlerFunc 
 	}
 }
 
+// @Summary Удаление пользователя
+// @Description Удаляет пользователя по ID
+// @Tags clients
+// @Accept json
+// @Produce json
+// @Param id path int true "ID пользователя"
+// @Success 200 {object} clientFull
+// @Failure 400 {object} string "Ошибка при удалении"
+// @Failure 401 {object} string "Нет доступа"
+// @Router /user/{id} [delete]
 func NewDelete(log *slog.Logger, repository client.Repository, fdRepo food.Repository, mlRepo meal.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "client.handlers.NewDelete"
@@ -219,6 +262,15 @@ func NewDelete(log *slog.Logger, repository client.Repository, fdRepo food.Repos
 	}
 }
 
+// @Summary Получить понравившиеся приёмы пищи
+// @Description Возвращает список понравившихся приёмов пищи пользователя
+// @Tags clients
+// @Produce json
+// @Param id path int true "ID пользователя"
+// @Success 200 {object} meal2.FindAllResponse
+// @Failure 400 {object} string "Ошибка при получении"
+// @Failure 401 {object} string "Нет доступа"
+// @Router /user/{id}/meals [get]
 func NewFindMealLikes(log *slog.Logger, repository client.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "client.handlers.NewFindMealLikes"
@@ -249,6 +301,15 @@ func NewFindMealLikes(log *slog.Logger, repository client.Repository) http.Handl
 	}
 }
 
+// @Summary Получить понравившиеся продукты
+// @Description Возвращает список понравившихся продуктов пользователя
+// @Tags clients
+// @Produce json
+// @Param id path int true "ID пользователя"
+// @Success 200 {object} food2.FindAllResponse
+// @Failure 400 {object} string "Ошибка при получении"
+// @Failure 401 {object} string "Нет доступа"
+// @Router /user/{id}/products [get]
 func NewFindFoodLikes(log *slog.Logger, repository client.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "client.handlers.NewFindFoodLikes"
