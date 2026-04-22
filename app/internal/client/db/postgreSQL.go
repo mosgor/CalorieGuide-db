@@ -5,11 +5,11 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/mosgor/CalorieGuide-db/internal/client"
-	"github.com/mosgor/CalorieGuide-db/internal/food"
-	"github.com/mosgor/CalorieGuide-db/internal/lib/logger/slg"
-	"github.com/mosgor/CalorieGuide-db/internal/meal"
-	"github.com/mosgor/CalorieGuide-db/internal/storage/postgreSQL"
+	"github.com/mosgor/CalorieGuide-db/app/internal/client"
+	"github.com/mosgor/CalorieGuide-db/app/internal/food"
+	"github.com/mosgor/CalorieGuide-db/app/internal/lib/logger/slg"
+	"github.com/mosgor/CalorieGuide-db/app/internal/meal"
+	"github.com/mosgor/CalorieGuide-db/app/internal/storage/postgreSQL"
 
 	"github.com/jackc/pgx/v5/pgconn"
 )

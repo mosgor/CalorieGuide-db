@@ -9,8 +9,8 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-chi/render"
-	"github.com/mosgor/CalorieGuide-db/internal/food"
-	"github.com/mosgor/CalorieGuide-db/internal/lib/logger/slg"
+	"github.com/mosgor/CalorieGuide-db/app/internal/food"
+	"github.com/mosgor/CalorieGuide-db/app/internal/lib/logger/slg"
 )
 
 type FindAllRequest struct {

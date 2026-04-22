@@ -1,4 +1,4 @@
-module github.com/mosgor/CalorieGuide-db
+module github.com/mosgor/CalorieGuide-db/app
 
 go 1.25.0
 

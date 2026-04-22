@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/mosgor/CalorieGuide-db/internal/food"
-	"github.com/mosgor/CalorieGuide-db/internal/lib/logger/slg"
-	"github.com/mosgor/CalorieGuide-db/internal/meal"
+	"github.com/mosgor/CalorieGuide-db/app/internal/food"
+	"github.com/mosgor/CalorieGuide-db/app/internal/lib/logger/slg"
+	"github.com/mosgor/CalorieGuide-db/app/internal/meal"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"

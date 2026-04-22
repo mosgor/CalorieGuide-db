@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/mosgor/CalorieGuide-db/internal/lib/repeatable"
+	"github.com/mosgor/CalorieGuide-db/app/internal/lib/repeatable"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
