@@ -1,25 +1,31 @@
+// Package main initializes the CalorieGuide API server.
+// It loads configuration, establishes a database connection,
+// configures HTTP middleware (CORS, JWT, logging, timeouts),
+// registers route groups, and serves Swagger UI endpoints.
 package main
 
 import (
-	client2 "CalorieGuide-db/internal/client/db"
-	client "CalorieGuide-db/internal/client/handlers"
-	"CalorieGuide-db/internal/config"
-	food2 "CalorieGuide-db/internal/food/db"
-	food "CalorieGuide-db/internal/food/handlers"
-	"CalorieGuide-db/internal/lib/logger/slg"
-	meal2 "CalorieGuide-db/internal/meal/db"
-	meal "CalorieGuide-db/internal/meal/handlers"
-	"CalorieGuide-db/internal/storage/postgreSQL"
 	"context"
 	"log/slog"
 	"net/http"
 	"os"
 	"time"
 
-	_ "CalorieGuide-db/docs"
+	client2 "github.com/mosgor/CalorieGuide-db/internal/client/db"
+	client "github.com/mosgor/CalorieGuide-db/internal/client/handlers"
+	"github.com/mosgor/CalorieGuide-db/internal/config"
+	food2 "github.com/mosgor/CalorieGuide-db/internal/food/db"
+	food "github.com/mosgor/CalorieGuide-db/internal/food/handlers"
+	"github.com/mosgor/CalorieGuide-db/internal/lib/logger/slg"
+	meal2 "github.com/mosgor/CalorieGuide-db/internal/meal/db"
+	meal "github.com/mosgor/CalorieGuide-db/internal/meal/handlers"
+	"github.com/mosgor/CalorieGuide-db/internal/storage/postgreSQL"
+
+	_ "github.com/mosgor/CalorieGuide-db/docs"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/go-chi/jwtauth/v5"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
@@ -65,10 +71,18 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 	router.Use(middleware.Timeout(5 * time.Second))
+	router.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"http://158.160.212.231:80", "http://158.160.212.231"},
+		AllowedMethods:   []string{"GET", "POST", "DELETE", "PUT", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}))
 
 	// Swagger UI
 	router.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8090/swagger/doc.json"), // указываем путь к swagger.json
+		httpSwagger.URL("http://158.160.212.231:80/swagger/doc.json"), // указываем путь к swagger.json
 	))
 
 	router.Get("/redoc", func(w http.ResponseWriter, r *http.Request) {

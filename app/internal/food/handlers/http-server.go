@@ -1,15 +1,16 @@
 package food
 
 import (
-	"CalorieGuide-db/internal/food"
-	"CalorieGuide-db/internal/lib/logger/slg"
+	"log/slog"
+	"net/http"
+	"strconv"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-chi/render"
-	"log/slog"
-	"net/http"
-	"strconv"
+	"github.com/mosgor/CalorieGuide-db/internal/food"
+	"github.com/mosgor/CalorieGuide-db/internal/lib/logger/slg"
 )
 
 type FindAllRequest struct {

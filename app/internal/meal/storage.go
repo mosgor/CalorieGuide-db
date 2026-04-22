@@ -1,8 +1,9 @@
 package meal
 
 import (
-	"CalorieGuide-db/internal/food"
 	"context"
+
+	"github.com/mosgor/CalorieGuide-db/internal/food"
 )
 
 type Repository interface {

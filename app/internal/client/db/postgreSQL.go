@@ -1,15 +1,17 @@
 package client
 
 import (
-	"CalorieGuide-db/internal/client"
-	"CalorieGuide-db/internal/food"
-	"CalorieGuide-db/internal/lib/logger/slg"
-	"CalorieGuide-db/internal/meal"
-	"CalorieGuide-db/internal/storage/postgreSQL"
 	"context"
 	"errors"
-	"github.com/jackc/pgconn"
 	"log/slog"
+
+	"github.com/mosgor/CalorieGuide-db/internal/client"
+	"github.com/mosgor/CalorieGuide-db/internal/food"
+	"github.com/mosgor/CalorieGuide-db/internal/lib/logger/slg"
+	"github.com/mosgor/CalorieGuide-db/internal/meal"
+	"github.com/mosgor/CalorieGuide-db/internal/storage/postgreSQL"
+
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type repository struct {
@@ -222,6 +224,10 @@ func (r *repository) UpdateDiet(ctx context.Context, diet client.Diet, dietId in
 	return nil
 }
 
+// Delete performs a cascading deletion of a client and all related entities.
+// It removes user likes, iterates through and deletes all foods/meals authored by the client,
+// clears associated diet and goal records, and finally removes the client itself.
+// NOTE: This method does not use a single DB transaction. Partial failures may leave orphaned records.
 func (r *repository) Delete(ctx context.Context, id int, fdRepo food.Repository, mealRepo meal.Repository) error {
 	q := `DELETE FROM public.food_client WHERE user_id=$1`
 	rw, err := r.client.Query(ctx, q, id)

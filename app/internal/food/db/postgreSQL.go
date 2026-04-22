@@ -1,14 +1,16 @@
 package food
 
 import (
-	"CalorieGuide-db/internal/food"
-	"CalorieGuide-db/internal/lib/logger/slg"
-	"CalorieGuide-db/internal/storage/postgreSQL"
 	"context"
 	"errors"
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgx/v4"
 	"log/slog"
+
+	"github.com/mosgor/CalorieGuide-db/internal/food"
+	"github.com/mosgor/CalorieGuide-db/internal/lib/logger/slg"
+	"github.com/mosgor/CalorieGuide-db/internal/storage/postgreSQL"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type repository struct {
@@ -225,6 +227,10 @@ func (r *repository) Like(ctx context.Context, prodId int, userId int) (liked bo
 	return
 }
 
+// Search performs fuzzy text matching using PostgreSQL pg_trgm SIMILARITY.
+// It queries name and description separately, deduplicates results by ID,
+// and optionally resolves the current user's like status for each item.
+// Requires the pg_trgm extension to be enabled in the target database.
 func (r *repository) Search(ctx context.Context, word string, userId int) (fd []food.WithLike, err error) {
 	includedIds := make(map[int]struct{})
 	q := `

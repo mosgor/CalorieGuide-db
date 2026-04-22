@@ -1,9 +1,10 @@
 package client
 
 import (
-	"CalorieGuide-db/internal/food"
-	"CalorieGuide-db/internal/meal"
 	"context"
+
+	"github.com/mosgor/CalorieGuide-db/internal/food"
+	"github.com/mosgor/CalorieGuide-db/internal/meal"
 )
 
 type Repository interface {

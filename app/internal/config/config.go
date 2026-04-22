@@ -1,3 +1,4 @@
+// Package config handles loading application settings from YAML and environment variables.
 package config
 
 import (
@@ -20,7 +21,7 @@ func GetToken(log *slog.Logger) *jwtauth.JWTAuth {
 		if key == "" {
 			panic("jwt_key is not set")
 		}
-		authToken = jwtauth.New("HS256", key, nil)
+		authToken = jwtauth.New("HS256", []byte(key), nil)
 	}
 	return authToken
 }
@@ -39,10 +40,12 @@ type HTTPServer struct {
 	//Password    string        `yaml:"password" env-required:"true" env:"HTTP_SERVER_PASSWORD"`
 }
 
+// MustLoad reads configuration from ./config/local.yaml, loads .env variables,
+// and panics if critical paths are missing or required environment values (e.g., JWT key) are unset.
 func MustLoad() *Config {
-	err := godotenv.Load("../.env")
+	err := godotenv.Load(".env")
 	if err != nil {
-		panic(err)
+		slog.Warn(err.Error())
 	}
 	var configPath string
 	if runtime.GOOS == "windows" {

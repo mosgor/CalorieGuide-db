@@ -1,13 +1,15 @@
 package meal
 
 import (
-	"CalorieGuide-db/internal/food"
-	"CalorieGuide-db/internal/meal"
-	"CalorieGuide-db/internal/storage/postgreSQL"
 	"context"
 	"errors"
-	"github.com/jackc/pgx/v4"
 	"log/slog"
+
+	"github.com/mosgor/CalorieGuide-db/internal/food"
+	"github.com/mosgor/CalorieGuide-db/internal/meal"
+	"github.com/mosgor/CalorieGuide-db/internal/storage/postgreSQL"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type repository struct {
@@ -239,6 +241,9 @@ func (r *repository) Like(ctx context.Context, mealId int, userId int) (liked bo
 	return
 }
 
+// AddProduct links a food item to a meal and incrementally updates nutritional totals.
+// It verifies the food exists, calculates macros (quantity * food_values), and inserts the relation.
+// WARNING: Concurrent calls without explicit transactions may cause race conditions on total_* fields.
 func (r *repository) AddProduct(ctx context.Context, id int, product *food.Food, quantity int) error {
 	q := `SELECT EXISTS (SELECT * FROM food WHERE id = $1)`
 	var exists bool

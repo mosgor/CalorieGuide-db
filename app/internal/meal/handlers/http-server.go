@@ -1,12 +1,13 @@
 package meal
 
 import (
-	"CalorieGuide-db/internal/food"
-	"CalorieGuide-db/internal/lib/logger/slg"
-	"CalorieGuide-db/internal/meal"
 	"log/slog"
 	"net/http"
 	"strconv"
+
+	"github.com/mosgor/CalorieGuide-db/internal/food"
+	"github.com/mosgor/CalorieGuide-db/internal/lib/logger/slg"
+	"github.com/mosgor/CalorieGuide-db/internal/meal"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"

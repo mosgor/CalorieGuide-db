@@ -9,14 +9,14 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - ./_data/payment_data:/var/lib/postgresql/data
-      - ./sql_scripts/payment:/docker-entrypoint-initdb.d
+      - ./_data:/var/lib/postgresql/data:z
+      - ./sql_scripts:/docker-entrypoint-initdb.d
 
   calorie_guide:
     container_name: calorie_guide
     build: app/
     ports: 
-      - "8088:8088"
+      - "80:8090"
     environment:
       jwt_key: ${jwt_key}
       address: ${address}

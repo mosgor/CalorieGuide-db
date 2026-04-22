@@ -1,16 +1,19 @@
 package client
 
 import (
-	"CalorieGuide-db/internal/client"
-	"CalorieGuide-db/internal/config"
-	"CalorieGuide-db/internal/food"
-	food2 "CalorieGuide-db/internal/food/handlers"
-	"CalorieGuide-db/internal/lib/logger/slg"
-	"CalorieGuide-db/internal/meal"
-	meal2 "CalorieGuide-db/internal/meal/handlers"
+	"bytes"
+	"io"
 	"log/slog"
 	"net/http"
 	"strconv"
+
+	"github.com/mosgor/CalorieGuide-db/internal/client"
+	"github.com/mosgor/CalorieGuide-db/internal/config"
+	"github.com/mosgor/CalorieGuide-db/internal/food"
+	food2 "github.com/mosgor/CalorieGuide-db/internal/food/handlers"
+	"github.com/mosgor/CalorieGuide-db/internal/lib/logger/slg"
+	"github.com/mosgor/CalorieGuide-db/internal/meal"
+	meal2 "github.com/mosgor/CalorieGuide-db/internal/meal/handlers"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -60,8 +63,22 @@ func NewAdd(log *slog.Logger, repository client.Repository) http.HandlerFunc {
 			slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
+
+		bodyBytes, err := io.ReadAll(r.Body)
+		if err != nil {
+			log.Error("Failed to read request body", slog.Any("error", err))
+			http.Error(w, "Failed to read request body", http.StatusBadRequest)
+			return
+		}
+
+		// 2. Логируем содержимое (внимание на безопасность, см. ниже)
+		log.Debug("Request body content", slog.String("body", string(bodyBytes)))
+
+		// 3. Восстанавливаем тело запроса, чтобы DecodeJSON мог его прочитать
+		r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
 		var req RegistrationRequest
-		err := render.DecodeJSON(r.Body, &req)
+		err = render.DecodeJSON(r.Body, &req)
 		if err != nil {
 			log.Error("Failed to parse request body", slg.Err(err))
 			return
